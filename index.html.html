@@ -1,0 +1,2661 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Changaon Khamba Fighter - DIU Load-Shedding Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Chakra+Petch:ital,wght@0,600;0,700;1,700&family=Hind+Siliguri:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --arcade-yellow: #ffd000;
+            --arcade-red: #ff2a2a;
+            --arcade-cyan: #00f0ff;
+            --arcade-green: #00ff66;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Chakra Petch', 'Hind Siliguri', sans-serif;
+            background-color: #090a0f;
+            color: #ffffff;
+            overflow-x: hidden;
+            transition: background-color 0.35s ease;
+        }
+
+        body.power-on-bg {
+            background-color: #1f1924;
+            background-image: radial-gradient(circle at 50% 30%, rgba(255, 200, 60, 0.18), rgba(15, 12, 24, 0.95) 70%);
+        }
+
+        body.power-off-bg {
+            background-color: #07080d;
+            background-image: radial-gradient(circle at 50% 30%, rgba(20, 30, 60, 0.15), #05060a 75%);
+        }
+
+        .font-arcade {
+            font-family: 'Bangers', cursive;
+            letter-spacing: 1.5px;
+        }
+
+        /* Arcade Bar Slant */
+        .skew-bar-left {
+            transform: skewX(-15deg);
+        }
+        .skew-bar-right {
+            transform: skewX(15deg);
+        }
+
+        /* Tactile Arcade Buttons */
+        .arcade-btn {
+            position: relative;
+            transition: all 0.08s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateY(0);
+            overflow: hidden;
+        }
+        .arcade-btn:active:not(:disabled),
+        .arcade-btn.pressed:not(:disabled) {
+            transform: translateY(5px);
+            box-shadow: 0 1px 0 rgba(0,0,0,0.8) !important;
+        }
+        .arcade-btn:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+
+        /* Ultimate Ready Pulse */
+        @keyframes ultPulse {
+            0%, 100% {
+                box-shadow: 0 6px 0 #7c2d12, 0 0 15px #facc15, inset 0 0 15px rgba(255,255,255,0.5);
+                transform: scale(1);
+            }
+            50% {
+                box-shadow: 0 6px 0 #7c2d12, 0 0 32px #ff0055, inset 0 0 25px rgba(255,255,255,0.8);
+                transform: scale(1.03);
+            }
+        }
+        .ult-ready {
+            animation: ultPulse 0.8s infinite ease-in-out;
+            background: linear-gradient(135deg, #f59e0b 0%, #ef4444 50%, #eab308 100%) !important;
+            color: #fff !important;
+            border-color: #fef08a !important;
+        }
+
+        /* Screen Shake Effect */
+        @keyframes stageGlowOn {
+            0%, 100% { border-color: #facc15; box-shadow: 0 0 25px rgba(250, 204, 21, 0.35), inset 0 0 20px rgba(250, 204, 21, 0.15); }
+            50% { border-color: #fde047; box-shadow: 0 0 40px rgba(250, 204, 21, 0.55), inset 0 0 30px rgba(250, 204, 21, 0.25); }
+        }
+        .stage-lit {
+            animation: stageGlowOn 2s infinite ease-in-out;
+        }
+        .stage-dark {
+            border-color: #334155;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.85), inset 0 0 40px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #090a0f; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+    </style>
+</head>
+<body class="power-off-bg min-h-screen flex flex-col justify-between items-center p-2 sm:p-4">
+
+    <!-- TOP TITLE & SETTINGS BAR -->
+    <header class="w-full max-w-4xl flex flex-wrap items-center justify-between gap-2 mb-2 px-2">
+        <div class="flex items-center gap-2 sm:gap-3">
+            <span class="text-2xl sm:text-3xl filter drop-shadow">⚡</span>
+            <div>
+                <h1 class="font-arcade text-2xl sm:text-4xl tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-red-500 to-orange-400 drop-shadow-sm leading-none">
+                    CHANGAON KHAMBA FIGHTER
+                </h1>
+                <p class="text-xs sm:text-sm text-slate-400 font-semibold">
+                    DIU Load-Shedding Edition • <span class="text-yellow-400">৫ মিনিটও কারেন্ট থাকে না! রাগ ঝাড়ুন খাম্বায়!</span>
+                </p>
+            </div>
+        </div>
+
+        <!-- Audio & Load-Shedding Mode Controls -->
+        <div class="flex items-center gap-2">
+            <select id="difficulty-select" aria-label="Load Shedding Intensity" class="bg-slate-800/90 border border-slate-600 text-xs sm:text-sm text-amber-300 font-bold rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-yellow-400 cursor-pointer">
+                <option value="0.11">🌡️ Normal Changaon Night</option>
+                <option value="0.18" selected>🔥 Chaitra Gorom (Fast Drain)</option>
+                <option value="0.26">💀 Final Exam Night (Extreme)</option>
+            </select>
+
+            <button id="shout-btn" onclick="triggerHallShout(true)" title="Trigger Mess Roommate Shout" class="bg-amber-700/90 hover:bg-amber-600 border border-amber-400 text-white px-2.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold flex items-center gap-1 transition shadow">
+                <span>📢</span>
+                <span class="hidden md:inline">Hall Shout</span>
+            </button>
+
+            <button id="voice-toggle" onclick="toggleVoice()" class="bg-indigo-900/90 hover:bg-indigo-800 border border-indigo-400 text-white px-2.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold flex items-center gap-1 transition">
+                <span id="voice-icon">🗣️</span>
+                <span id="voice-label" class="hidden sm:inline">Voice ON</span>
+            </button>
+
+            <button id="sound-toggle" onclick="toggleSound()" class="bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold flex items-center gap-1.5 transition">
+                <span id="sound-icon">🔊</span>
+                <span id="sound-label" class="hidden sm:inline">SFX ON</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN ARCADE CABINET CONTAINER -->
+    <main class="w-full max-w-4xl flex flex-col items-center">
+
+        <!-- ARCADE FIGHTING HUD -->
+        <div class="w-full bg-slate-900/95 border-2 border-slate-700 rounded-2xl p-2.5 sm:p-3.5 mb-2.5 shadow-2xl backdrop-blur-md">
+            <div class="grid grid-cols-12 gap-2 items-center">
+
+                <!-- LEFT HUD: ANGRY DIU STUDENT -->
+                <div class="col-span-5 flex items-center gap-2 sm:gap-3">
+                    <!-- Custom SVG Portrait: DIU Student -->
+                    <div class="relative w-12 h-12 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-red-900 via-slate-800 to-slate-900 border-2 border-red-500 flex-shrink-0 overflow-hidden shadow-lg">
+                        <svg viewBox="0 0 100 100" class="w-full h-full">
+                            <!-- Aura background -->
+                            <circle cx="50" cy="55" r="42" fill="#ef4444" opacity="0.2"/>
+                            <!-- Shoulders / Green DIU Tee -->
+                            <path d="M15 100 Q50 75 85 100" fill="#15803d" stroke="#14532d" stroke-width="3"/>
+                            <!-- Head -->
+                            <circle cx="50" cy="52" r="24" fill="#d97742" stroke="#431407" stroke-width="2.5"/>
+                            <!-- Messy Hair -->
+                            <path d="M25 45 Q20 20 38 25 Q50 12 62 25 Q80 20 75 45 Z" fill="#1e1b18"/>
+                            <!-- Red Rage Headband -->
+                            <path d="M25 38 Q50 43 75 38 L76 45 Q50 50 24 45 Z" fill="#ef4444"/>
+                            <path d="M24 41 L8 34 L12 46 Z" fill="#dc2626"/>
+                            <!-- Angry Eyebrows & Eyes -->
+                            <path d="M34 45 L46 50" stroke="#111" stroke-width="4" stroke-linecap="round"/>
+                            <path d="M66 45 L54 50" stroke="#111" stroke-width="4" stroke-linecap="round"/>
+                            <circle cx="41" cy="52" r="3.5" fill="#fff"/>
+                            <circle cx="41" cy="52" r="1.8" fill="#dc2626"/>
+                            <circle cx="59" cy="52" r="3.5" fill="#fff"/>
+                            <circle cx="59" cy="52" r="1.8" fill="#dc2626"/>
+                            <!-- Gritted Teeth Mouth -->
+                            <rect x="38" y="61" width="24" height="9" rx="3" fill="#fff" stroke="#111" stroke-width="2"/>
+                            <line x1="46" y1="61" x2="46" y2="70" stroke="#111" stroke-width="1.5"/>
+                            <line x1="54" y1="61" x2="54" y2="70" stroke="#111" stroke-width="1.5"/>
+                            <line x1="38" y1="65.5" x2="62" y2="65.5" stroke="#111" stroke-width="1.5"/>
+                        </svg>
+                        <div id="combo-badge" class="hidden absolute -bottom-1 -right-1 bg-yellow-400 text-black font-arcade text-xs px-1.5 py-0.5 rounded border border-black">
+                            0x
+                        </div>
+                    </div>
+
+                    <!-- Student Info & Rage Bar -->
+                    <div class="flex-1 min-w-0">
+                        <div class="flex justify-between items-baseline mb-1">
+                            <span class="font-arcade text-sm sm:text-lg text-yellow-400 tracking-wide truncate">DIU MESS STUDENT</span>
+                            <span class="text-[11px] sm:text-xs font-bold text-orange-400">RAGE: <span id="rage-pct">0%</span></span>
+                        </div>
+                        <!-- Rage Meter Track -->
+                        <div class="w-full h-4 sm:h-5 bg-slate-950 border-2 border-slate-600 rounded p-0.5 skew-bar-left overflow-hidden shadow-inner">
+                            <div id="rage-bar" class="h-full bg-gradient-to-r from-orange-500 via-red-500 to-yellow-300 transition-all duration-100 rounded-xs" style="width: 0%;"></div>
+                        </div>
+                        <div class="flex justify-between items-center mt-1 text-[11px] sm:text-xs text-slate-300">
+                            <span>💥 মাইর: <strong id="hit-count" class="text-white">0</strong></span>
+                            <span id="rage-hint" class="text-amber-400 font-bold truncate">Fill Rage for Ultimate!</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CENTER HUD: POWER STATUS & VS -->
+                <div class="col-span-2 flex flex-col items-center justify-center text-center px-1">
+                    <div id="status-pill" class="w-full py-1 px-1.5 rounded-lg border-2 border-red-500/80 bg-red-950/90 text-red-300 font-bold text-[10px] sm:text-xs leading-tight shadow-md transition-all">
+                        <div id="status-icon" class="text-base sm:text-xl leading-none mb-0.5">🔴</div>
+                        <div id="power-status" class="tracking-wider uppercase font-extrabold">ONDHOKAR</div>
+                    </div>
+                    <div class="mt-1 text-[10px] sm:text-xs text-slate-400 font-semibold">
+                        ⚡ Uptime: <span id="uptime-timer" class="text-yellow-300 font-bold">0.0s</span>
+                    </div>
+                </div>
+
+                <!-- RIGHT HUD: CHANGAON KHAMBA VOLTAGE -->
+                <div class="col-span-5 flex items-center gap-2 sm:gap-3 flex-row-reverse">
+                    <!-- Custom SVG Portrait: Electric Khamba -->
+                    <div class="relative w-12 h-12 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-bl from-cyan-900 via-slate-800 to-slate-900 border-2 border-cyan-400 flex-shrink-0 overflow-hidden shadow-lg">
+                        <svg viewBox="0 0 100 100" class="w-full h-full">
+                            <!-- Lightning bg -->
+                            <circle cx="50" cy="50" r="40" fill="#06b6d4" opacity="0.18"/>
+                            <!-- Concrete Pole -->
+                            <rect x="42" y="12" width="16" height="85" fill="#94a3b8" stroke="#334155" stroke-width="2.5"/>
+                            <!-- Cross arm -->
+                            <rect x="18" y="24" width="64" height="7" rx="2" fill="#64748b" stroke="#1e293b" stroke-width="2"/>
+                            <!-- Insulators -->
+                            <circle cx="24" cy="20" r="4" fill="#38bdf8"/>
+                            <circle cx="76" cy="20" r="4" fill="#38bdf8"/>
+                            <!-- Transformer Box -->
+                            <rect x="28" y="42" width="44" height="32" rx="3" fill="#475569" stroke="#1e293b" stroke-width="2.5"/>
+                            <!-- Danger Skull/Bolt -->
+                            <polygon points="52,47 43,60 50,60 47,70 58,56 51,56" fill="#facc15"/>
+                            <!-- Angry Khamba Eyes -->
+                            <circle cx="38" cy="52" r="3" fill="#ef4444"/>
+                            <circle cx="62" cy="52" r="3" fill="#ef4444"/>
+                        </svg>
+                    </div>
+
+                    <!-- Khamba Info & Voltage Bar -->
+                    <div class="flex-1 min-w-0">
+                        <div class="flex justify-between items-baseline mb-1">
+                            <span class="text-[11px] sm:text-xs font-bold text-cyan-300">VOLTAGE: <span id="voltage-pct">0%</span></span>
+                            <span class="font-arcade text-sm sm:text-lg text-cyan-400 tracking-wide truncate">PALLI BIDYUT KHAMBA</span>
+                        </div>
+                        <!-- Voltage Meter Track with 30% Threshold Marker -->
+                        <div class="relative w-full h-4 sm:h-5 bg-slate-950 border-2 border-slate-600 rounded p-0.5 skew-bar-right overflow-hidden shadow-inner">
+                            <!-- 30% Power ON threshold line -->
+                            <div class="absolute top-0 bottom-0 left-[30%] w-0.5 bg-yellow-400 z-10" title="30% Minimum Voltage for Light"></div>
+                            <div id="voltage-bar" class="h-full bg-gradient-to-r from-red-600 via-yellow-400 to-cyan-400 transition-all duration-75 rounded-xs" style="width: 0%;"></div>
+                        </div>
+                        <div class="flex justify-between items-center mt-1 text-[10px] sm:text-xs text-slate-300">
+                            <span class="text-yellow-400 font-semibold">▲ Keep &gt;30% for Current</span>
+                            <span id="transformer-condition" class="text-slate-400 font-bold">খাম্বা অক্ষত</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- INTERACTIVE GAME STAGE (HIGH-DPI CANVAS) -->
+        <div id="stage-container" class="relative w-full aspect-[16/10] sm:aspect-[16/9] max-h-[470px] rounded-2xl border-4 stage-dark overflow-hidden bg-slate-950 cursor-pointer select-none">
+            <canvas id="game-canvas" class="w-full h-full block"></canvas>
+
+            <!-- Floating Overlay Instructions (Fades out after first hit) -->
+            <div id="tutorial-overlay" class="pointer-events-none absolute inset-x-0 top-3 flex justify-center transition-opacity duration-500">
+                <div class="bg-black/75 border border-yellow-400/60 text-yellow-300 px-3.5 py-1 rounded-full text-xs sm:text-sm font-bold shadow-lg flex items-center gap-2">
+                    <span class="animate-bounce">👇</span>
+                    <span>খাম্বার উপর ক্লিক করুন অথবা নিচের বাটন/কীবোর্ড দিয়ে পিটানি শুরু করুন!</span>
+                </div>
+            </div>
+
+            <!-- Ultimate Active Banner -->
+            <div id="ult-banner" class="hidden pointer-events-none absolute inset-x-0 top-12 flex justify-center z-20">
+                <div class="bg-gradient-to-r from-red-600 via-yellow-500 to-red-600 text-black font-arcade text-xl sm:text-3xl px-6 py-1 rounded-full border-2 border-white shadow-[0_0_30px_#facc15] animate-pulse">
+                    ⚡ EXAM NIGHT RAGE ACTIVE! 100% VOLTAGE LOCKED! ⚡
+                </div>
+            </div>
+        </div>
+
+        <!-- ARCADE FIGHTING CONTROLS DECK -->
+        <div class="w-full mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
+
+            <!-- Attack 1: KIL-GUSI (Punch) -->
+            <button id="btn-punch" onclick="triggerAttack('punch')" class="arcade-btn bg-gradient-to-b from-red-500 to-red-700 hover:from-red-400 hover:to-red-600 text-white border-2 border-red-300 rounded-xl p-2.5 sm:p-3 flex flex-col items-center justify-center shadow-[0_6px_0_#7f1d1d]">
+                <div class="flex items-center gap-1.5">
+                    <span class="text-xl sm:text-2xl">🥊</span>
+                    <span class="font-arcade text-lg sm:text-xl tracking-wider">KIL-GUSI</span>
+                </div>
+                <div class="text-[11px] font-bold text-red-100 mt-0.5">+12% Voltage • Fast</div>
+                <span class="mt-1 bg-black/40 px-2 py-0.5 rounded text-[10px] font-mono text-yellow-300 border border-white/15">Key: [Z] / [A]</span>
+            </button>
+
+            <!-- Attack 2: FLYING LATHI (Kick) -->
+            <button id="btn-kick" onclick="triggerAttack('kick')" class="arcade-btn bg-gradient-to-b from-orange-500 to-amber-700 hover:from-orange-400 hover:to-amber-600 text-white border-2 border-orange-300 rounded-xl p-2.5 sm:p-3 flex flex-col items-center justify-center shadow-[0_6px_0_#78350f]">
+                <div id="kick-cd-bar" class="absolute bottom-0 left-0 h-1 bg-yellow-300 transition-all" style="width: 0%;"></div>
+                <div class="flex items-center gap-1.5">
+                    <span class="text-xl sm:text-2xl">🦵</span>
+                    <span class="font-arcade text-lg sm:text-xl tracking-wider">FLYING LATHI</span>
+                </div>
+                <div class="text-[11px] font-bold text-orange-100 mt-0.5">+22% Voltage • Heavy</div>
+                <span class="mt-1 bg-black/40 px-2 py-0.5 rounded text-[10px] font-mono text-yellow-300 border border-white/15">Key: [X] / [S]</span>
+            </button>
+
+            <!-- Attack 3: BASHER BARI (Bamboo Smash) -->
+            <button id="btn-bamboo" onclick="triggerAttack('bamboo')" class="arcade-btn bg-gradient-to-b from-emerald-500 to-green-700 hover:from-emerald-400 hover:to-green-600 text-white border-2 border-emerald-300 rounded-xl p-2.5 sm:p-3 flex flex-col items-center justify-center shadow-[0_6px_0_#14532d]">
+                <div id="bamboo-cd- overlay" class="absolute inset-0 bg-black/60 pointer-events-none transition-all origin-bottom" style="transform: scaleY(0);"></div>
+                <div class="flex items-center gap-1.5 relative z-10">
+                    <span class="text-xl sm:text-2xl">🎋</span>
+                    <span class="font-arcade text-lg sm:text-xl tracking-wider">BASHER BARI</span>
+                </div>
+                <div id="bamboo-status-text" class="text-[11px] font-bold text-emerald-100 mt-0.5 relative z-10">+32% Voltage • Shockwave</div>
+                <span class="mt-1 bg-black/40 px-2 py-0.5 rounded text-[10px] font-mono text-yellow-300 border border-white/15 relative z-10">Key: [C] / [D]</span>
+            </button>
+
+            <!-- Attack 4: EXAM NIGHT RAGE (Ultimate) -->
+            <button id="btn-ult" onclick="triggerAttack('ultimate')" disabled class="arcade-btn bg-gradient-to-b from-slate-700 to-slate-800 text-slate-300 border-2 border-slate-500 rounded-xl p-2.5 sm:p-3 flex flex-col items-center justify-center shadow-[0_6px_0_#1e293b]">
+                <div class="flex items-center gap-1.5">
+                    <span class="text-xl sm:text-2xl">⚡</span>
+                    <span class="font-arcade text-lg sm:text-xl tracking-wider">EXAM RAGE</span>
+                </div>
+                <div id="ult-status-text" class="text-[11px] font-bold text-amber-200 mt-0.5">Needs 100% Rage</div>
+                <span class="mt-1 bg-black/40 px-2 py-0.5 rounded text-[10px] font-mono text-yellow-300 border border-white/15">Key: [SPACEBAR]</span>
+            </button>
+
+        </div>
+    </main>
+
+    <!-- FOOTER / FLAVOR TEXT -->
+    <footer class="w-full max-w-4xl text-center mt-3 text-xs text-slate-500 flex flex-wrap justify-between items-center px-2 gap-2">
+        <span>📍 Location: <strong class="text-slate-400">Changaon Mess Para, Ashulia (Near DIU)</strong></span>
+        <span>⚠️ সাবধান: খাম্বা বেশি বাঁকা হলে উল্টা ঘুরে আপনার মাথায় বাড়ি দিয়ে উল্টে ফেলে দিবে!</span>
+    </footer>
+
+    <script>
+        /**************************************************************
+         * 1. WEB AUDIO SYNTHESIZER & HALL VOICE COMMENTARY
+         **************************************************************/
+        let audioCtx = null;
+        let soundEnabled = true;
+        let voiceEnabled = true;
+        let availableVoices = [];
+        let activeUtterance = null; // Prevents garbage-collection cutoff in Chrome/Android
+
+        if ('speechSynthesis' in window) {
+            const loadVoices = () => {
+                availableVoices = window.speechSynthesis.getVoices() || [];
+            };
+            loadVoices();
+            window.speechSynthesis.onvoiceschanged = loadVoices;
+        }
+
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass) {
+                    audioCtx = new AudioContextClass();
+                }
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            document.getElementById('sound-icon').innerText = soundEnabled ? '🔊' : '🔇';
+            document.getElementById('sound-label').innerText = soundEnabled ? 'SFX ON' : 'MUTED';
+            if (soundEnabled) {
+                initAudio();
+                playSound('spark');
+            }
+        }
+
+        function toggleVoice() {
+            voiceEnabled = !voiceEnabled;
+            document.getElementById('voice-icon').innerText = voiceEnabled ? '🗣️' : '🤐';
+            document.getElementById('voice-label').innerText = voiceEnabled ? 'Voice ON' : 'Voice OFF';
+            if (!voiceEnabled && 'speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            } else if (voiceEnabled) {
+                triggerHallShout(true);
+            }
+        }
+
+        // Clear, reliable Web Speech API + subtle megaphone chime that works across all devices
+        function speakHallComment(quoteObj, forceInterrupt = false) {
+            if (!voiceEnabled || !quoteObj) return;
+            initAudio();
+
+            if ('speechSynthesis' in window) {
+                try {
+                    // Refresh voices list if empty
+                    if (!availableVoices || availableVoices.length === 0) {
+                        availableVoices = window.speechSynthesis.getVoices() || [];
+                    }
+
+                    // Do NOT cut off an ongoing sentence unless forced by a state change or Hall Shout button
+                    if (window.speechSynthesis.speaking && !forceInterrupt) {
+                        return;
+                    }
+                    if (forceInterrupt) {
+                        window.speechSynthesis.cancel();
+                    }
+
+                    // Subtle attention-grabbing 2-tone roommate megaphone cue (low volume so voice is crystal clear)
+                    if (soundEnabled && audioCtx) {
+                        const now = audioCtx.currentTime;
+                        [380, 520].forEach((f, idx) => {
+                            const osc = audioCtx.createOscillator();
+                            const gain = audioCtx.createGain();
+                            osc.type = 'triangle';
+                            osc.frequency.setValueAtTime(f, now + idx * 0.055);
+                            gain.gain.setValueAtTime(0.035, now + idx * 0.055);
+                            gain.gain.exponentialRampToValueAtTime(0.002, now + idx * 0.055 + 0.05);
+                            osc.connect(gain);
+                            gain.connect(audioCtx.destination);
+                            osc.start(now + idx * 0.055);
+                            osc.stop(now + idx * 0.055 + 0.052);
+                        });
+                    }
+
+                    // Inspect available voices:
+                    // 1. Native Bangla voice (bn-BD / bn-IN) -> speak Bengali Unicode
+                    // 2. Indian English / Hindi voice -> speak clean phonetic Banglish so it NEVER fails silently!
+                    const bnVoice = availableVoices.find(v =>
+                        v.lang && (v.lang.toLowerCase().includes('bn') || v.name.toLowerCase().includes('bangla') || v.name.toLowerCase().includes('bengali'))
+                    );
+                    const inVoice = availableVoices.find(v =>
+                        v.lang && (v.lang.toLowerCase().includes('hi') || v.lang.toLowerCase().includes('en-in') || v.lang.toLowerCase().includes('in'))
+                    );
+                    const enVoice = availableVoices.find(v => v.lang && v.lang.toLowerCase().startsWith('en')) || availableVoices[0];
+
+                    const rawBn = (quoteObj.bn || quoteObj.text || '').replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
+                    const cleanPhonetic = (quoteObj.phonetic || rawBn).replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
+
+                    // Use Bengali Unicode ONLY when a verified Bangla TTS voice is present; otherwise speak phonetic Banglish!
+                    const textToSpeak = bnVoice ? rawBn : cleanPhonetic;
+                    const utter = new SpeechSynthesisUtterance(textToSpeak);
+                    activeUtterance = utter;
+
+                    if (bnVoice) {
+                        utter.voice = bnVoice;
+                        utter.lang = bnVoice.lang;
+                        utter.rate = 1.05;
+                        utter.pitch = quoteObj.isHappy ? 1.15 : 1.25;
+                    } else if (inVoice) {
+                        utter.voice = inVoice;
+                        utter.lang = inVoice.lang;
+                        utter.rate = 1.02;
+                        utter.pitch = quoteObj.isHappy ? 1.12 : 1.22;
+                    } else {
+                        if (enVoice) utter.voice = enVoice;
+                        utter.lang = 'en-US';
+                        utter.rate = 1.0;
+                        utter.pitch = quoteObj.isHappy ? 1.1 : 1.2;
+                    }
+
+                    utter.volume = 1.0;
+                    utter.onend = () => { activeUtterance = null; };
+                    utter.onerror = () => { activeUtterance = null; };
+
+                    window.speechSynthesis.speak(utter);
+                } catch (err) {
+                    activeUtterance = null;
+                }
+            }
+        }
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            initAudio();
+            if (!audioCtx) return;
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'punch') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(160, now);
+                osc.frequency.exponentialRampToValueAtTime(42, now + 0.12);
+                gain.gain.setValueAtTime(0.45, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.13);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.13);
+
+                const ping = audioCtx.createOscillator();
+                const pingGain = audioCtx.createGain();
+                ping.type = 'sine';
+                ping.frequency.setValueAtTime(880, now);
+                ping.frequency.exponentialRampToValueAtTime(440, now + 0.09);
+                pingGain.gain.setValueAtTime(0.15, now);
+                pingGain.gain.exponentialRampToValueAtTime(0.01, now + 0.09);
+                ping.connect(pingGain);
+                pingGain.connect(audioCtx.destination);
+                ping.start(now);
+                ping.stop(now + 0.09);
+            }
+            else if (type === 'kick') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(220, now);
+                osc.frequency.exponentialRampToValueAtTime(30, now + 0.22);
+                gain.gain.setValueAtTime(0.5, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.23);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.23);
+                playSound('spark');
+            }
+            else if (type === 'bamboo') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(520, now);
+                osc.frequency.exponentialRampToValueAtTime(65, now + 0.26);
+                gain.gain.setValueAtTime(0.45, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.27);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.27);
+
+                const ring = audioCtx.createOscillator();
+                const ringGain = audioCtx.createGain();
+                ring.type = 'triangle';
+                ring.frequency.setValueAtTime(1240, now);
+                ring.frequency.exponentialRampToValueAtTime(310, now + 0.3);
+                ringGain.gain.setValueAtTime(0.25, now);
+                ringGain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                ring.connect(ringGain);
+                ringGain.connect(audioCtx.destination);
+                ring.start(now);
+                ring.stop(now + 0.3);
+            }
+            else if (type === 'headSmack') {
+                // Comical cartoon BOING + heavy head BONK when Khamba smacks student upside down!
+                const bonk = audioCtx.createOscillator();
+                const bonkGain = audioCtx.createGain();
+                bonk.type = 'sawtooth';
+                bonk.frequency.setValueAtTime(320, now);
+                bonk.frequency.exponentialRampToValueAtTime(48, now + 0.25);
+                bonkGain.gain.setValueAtTime(0.55, now);
+                bonkGain.gain.exponentialRampToValueAtTime(0.01, now + 0.26);
+                bonk.connect(bonkGain);
+                bonkGain.connect(audioCtx.destination);
+                bonk.start(now);
+                bonk.stop(now + 0.26);
+
+                // Springy cartoon boing
+                const boing = audioCtx.createOscillator();
+                const boingGain = audioCtx.createGain();
+                boing.type = 'sine';
+                boing.frequency.setValueAtTime(190, now + 0.05);
+                boing.frequency.linearRampToValueAtTime(620, now + 0.18);
+                boing.frequency.linearRampToValueAtTime(240, now + 0.32);
+                boing.frequency.linearRampToValueAtTime(540, now + 0.45);
+                boingGain.gain.setValueAtTime(0.35, now + 0.05);
+                boingGain.gain.exponentialRampToValueAtTime(0.01, now + 0.48);
+                boing.connect(boingGain);
+                boingGain.connect(audioCtx.destination);
+                boing.start(now + 0.05);
+                boing.stop(now + 0.48);
+            }
+            else if (type === 'spark') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(120, now);
+                osc.frequency.linearRampToValueAtTime(680, now + 0.04);
+                osc.frequency.linearRampToValueAtTime(180, now + 0.09);
+                gain.gain.setValueAtTime(0.18, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.1);
+            }
+            else if (type === 'powerOn') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(220, now);
+                osc.frequency.exponentialRampToValueAtTime(660, now + 0.28);
+                gain.gain.setValueAtTime(0.25, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            }
+            else if (type === 'powerOff') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(55, now + 0.45);
+                gain.gain.setValueAtTime(0.35, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.46);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.46);
+            }
+            else if (type === 'ultimate') {
+                [261.6, 329.6, 392.0, 523.2].forEach((freq, idx) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.05);
+                    osc.frequency.exponentialRampToValueAtTime(freq * 1.5, now + 0.5 + idx * 0.05);
+                    gain.gain.setValueAtTime(0.15, now + idx * 0.05);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.65);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now + idx * 0.05);
+                    osc.stop(now + 0.65);
+                });
+            }
+        }
+
+        /**************************************************************
+         * 2. GAME STATE & FIGHTING MECHANICS
+         **************************************************************/
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Logical resolution for crisp vector drawing
+        const W = 900;
+        const H = 500;
+        canvas.width = W;
+        canvas.height = H;
+
+        const state = {
+            hits: 0,
+            combo: 0,
+            lastHitTimestamp: 0,
+            voltage: 0,           // 0 to 100. Above 30 = Power ON!
+            rage: 25,             // Starts with some rage in the dark!
+            isPowerOn: false,
+            uptimeSeconds: 0,
+            drainRate: 0.18,      // Controlled by difficulty selector
+            ultimateActive: false,
+            ultimateTimer: 0,
+
+            // Cooldowns (ms)
+            kickCooldownUntil: 0,
+            bambooCooldownUntil: 0,
+
+            // Fighter Animation State (7-Move Hand & Leg Street-Brawl Combo System)
+            fighter: {
+                pose: 'idle',        // 'idle', 'left_jab', 'right_hook', 'lungi_kick', 'high_kick', 'double_thappor', 'flying_knee', 'bamboo_combo', 'knockdown'
+                moveIndex: 0,        // Cycles continuously through hand & leg moves on every hit!
+                poseTimer: 0,
+                poseDuration: 20,    // ~320ms per attack for clear wind-up, full extension & follow-through
+                xOffset: 0,
+                yOffset: 0,
+                punchHand: 0,
+                knockdownTimer: 0,   // When > 0, fighter is flipped upside down!
+                studentBubble: { text: "", timer: 0 }
+            },
+
+            // Khamba Physics & Counter-Attack State
+            pole: {
+                bendAngle: 0,
+                bendVelocity: 0,
+                flashTimer: 0,
+                damageCracks: 0,
+                hitsUntilCounter: 6, // Every few hits, Khamba whips left to smack student's head!
+                counterAttackPhase: 0 // 0 = normal, 1 = winding right, 2 = whipping left onto student's head!
+            },
+
+            // Environment & FX
+            screenShake: 0,
+            fanAngle: 0,
+            sparks: [],
+            smokePuffs: [],
+            earSteamPuffs: [],
+            shockwaves: [],
+            floatingTexts: [],
+            mosquitoes: [],
+            windowBubble: {
+                text: "ও ভাই কারেন্ট গেল কই?! গরমে সিদ্ধ হয়ে গেলাম! 🤬",
+                phonetic: "O bhai current gelo koi?! Gorome shiddho hoye gelam!",
+                timer: 180,
+                isHappy: false
+            }
+        };
+
+        // Initialize annoying Changaon mosquitoes
+        for (let i = 0; i < 8; i++) {
+            state.mosquitoes.push({
+                angle: Math.random() * Math.PI * 2,
+                radiusX: 25 + Math.random() * 48,
+                radiusY: 15 + Math.random() * 32,
+                speed: 0.065 + Math.random() * 0.06,
+                offsetY: -135 + (Math.random() - 0.5) * 40
+            });
+        }
+
+        const BANGLISH_HIT_WORDS = [
+            "👊 কিল! ঢিশুম!",
+            "🦶 লুঙ্গি লাথি! ⚡",
+            "🖐️ কষে থাপ্পড়! 💡",
+            "🦵 উড়ন্ত লাথি! 🔥",
+            "🦵 হাঁটুর গুঁতা! 💥",
+            "🎋 বাঁশের বাড়ি! ⚡",
+            "👊 হাত চালা! পা চালা!",
+            "🦶 কারেন্ট দে বেটা! 💡",
+            "🖐️ ডাবল চড়! 😤",
+            "🦵 খাম্বা ভর্তা বানামু! 🔥"
+        ];
+
+        const DARK_WINDOW_QUOTES = [
+            {
+                bn: "ভাইরে ভাই! ল্যাপটপে অ্যাসাইনমেন্ট সাবমিট করার টাইমেই কারেন্ট গেলো! স্যাররে কি বলমু খাম্বায় কারেন্ট খাইছে?! 😭",
+                text: "ভাইরে ভাই! ল্যাপটপে অ্যাসাইনমেন্ট সাবমিট করার টাইমেই কারেন্ট গেলো! স্যাররে কি বলমু খাম্বায় কারেন্ট খাইছে?! 😭",
+                phonetic: "Bhairey bhai! Laptop ey assignment submit korar time-ei current gelo! Sir-rey ki bolmu khambay current khaise?!"
+            },
+            {
+                bn: "ফোনে ২% চার্জ! মেসেঞ্জারে ক্রাশ নক দিছে আর এখনই কারেন্ট গেলো! খাম্বা তোর একদিন কি আমার একদিন! 🤬",
+                text: "ফোনে ২% চার্জ! মেসেঞ্জারে ক্রাশ নক দিছে আর এখনই কারেন্ট গেলো! খাম্বা তোর একদিন কি আমার একদিন! 🤬",
+                phonetic: "Phone ey dui percent charge! Messenger ey crush knock dise aar ekhoni current gelo! Khamba tor ekdin ki amar ekdin!"
+            },
+            {
+                bn: "রাইস কুকারে ভাত অর্ধেক সিদ্ধ হইয়া আটকায় আছে! কারেন্ট দে নাহলে কাঁচা চাল খাম্বায় খাওয়ামু! 🍚",
+                text: "রাইস কুকারে ভাত অর্ধেক সিদ্ধ হইয়া আটকায় আছে! কারেন্ট দে নাহলে কাঁচা চাল খাম্বায় খাওয়ামু! 🍚",
+                phonetic: "Rice cooker ey bhaat ordhek shiddho hoiya atkay ache! Current de nahole kacha chaal khambay khawamu!"
+            },
+            {
+                bn: "পাশের বাসায় কারেন্ট আছে, শুধু আমাদের মেসের ফেইজ গেছে! হাত-পা চালায়া লাথি মার খাম্বায়! 🦵",
+                text: "পাশের বাসায় কারেন্ট আছে, শুধু আমাদের মেসের ফেইজ গেছে! হাত-পা চালায়া লাথি মার খাম্বায়! 🦵",
+                phonetic: "Pasher bashay current ache, shudhu amader mess er phase gese! Haat pa chalaiya lathi maar khambay!"
+            },
+            {
+                bn: "এই গরমে লুঙ্গি ভিজে ত্যানা-ত্যানা হয়ে গেলো রে! খাম্বা আজকে আস্ত রাখমু না! 🩳",
+                text: "এই গরমে লুঙ্গি ভিজে ত্যানা-ত্যানা হয়ে গেলো রে! খাম্বা আজকে আস্ত রাখমু না! 🩳",
+                phonetic: "Ei gorome lungi bhije tena tena hoye gelo re! Khamba ajke aasto rakhmu na!"
+            },
+            {
+                bn: "ড্যাফোডিলের সকাল ৭টার বাস মিস হইবো! কারেন্ট না আইলে খাম্বার মাথায় উইঠা ঘুমামু! 🚌",
+                text: "ড্যাফোডিলের সকাল ৭টার বাস মিস হইবো! কারেন্ট না আইলে খাম্বার মাথায় উইঠা ঘুমামু! 🚌",
+                phonetic: "Daffodil er shokal shat-tar bus miss hoibo! Current na aile khambar mathay uitha ghumamu!"
+            },
+            {
+                bn: "মশার কামড়ে রক্ত শূন্য হয়ে গেলাম, ফ্যানটা ঘুরা না কেন! দে খাম্বায় কষে লাথি! 🦟",
+                text: "মশার কামড়ে রক্ত শূন্য হয়ে গেলাম, ফ্যানটা ঘুরা না কেন! দে খাম্বায় কষে লাথি! 🦟",
+                phonetic: "Moshar kamre rokto shunno hoye gelam, fan ta ghura na keno! De khambay koshe lathi!"
+            },
+            {
+                bn: "হাত চালাও ভাই, পা চালাও! খাম্বারে কিল-ঘুষি-লাথি না দিলে পল্লী বিদ্যুৎ ঘুম থেকে উঠবো না! 👊🦶",
+                text: "হাত চালাও ভাই, পা চালাও! খাম্বারে কিল-ঘুষি-লাথি না দিলে পল্লী বিদ্যুৎ ঘুম থেকে উঠবো না! 👊🦶",
+                phonetic: "Haat chalao bhai, pa chalao! Khambare kil ghushi lathi na dile Palli Bidyut ghum theke uthbo na!"
+            },
+            {
+                bn: "কারেন্ট গেছে তো কি হইছে, খাম্বারে পিটাইয়া আজকে সিক্স প্যাক বানায়া ফেলমু! 💪",
+                text: "কারেন্ট গেছে তো কি হইছে, খাম্বারে পিটাইয়া আজকে সিক্স প্যাক বানায়া ফেলমু! 💪",
+                phonetic: "Current gese to ki hoise, khambare pitaiya ajke six pack banaiya felmu!"
+            },
+            {
+                bn: "ওই মামা! চান্দগাঁও মেসে ৫ মিনিট কারেন্ট থাকে আর ৫ ঘন্টা লোডশেডিং! মার বাঁশের বাড়ি! 🎋",
+                text: "ওই মামা! চান্দগাঁও মেসে ৫ মিনিট কারেন্ট থাকে আর ৫ ঘন্টা লোডশেডিং! মার বাঁশের বাড়ি! 🎋",
+                phonetic: "Oi mama! Changaon mess ey pach minute current thake aar pach ghonta load shedding! Maar basher bari!"
+            }
+        ];
+
+        const STUDENT_DARK_SHOUTS = [
+            "হাত-পা দুইটাই চালাইতেছি! কারেন্ট আজকে পয়দা করেই ছাড়মু! 👊🦵",
+            "রাইস কুকারে ভাত কাঁচা! দে খাম্বায় উড়ন্ত লাথি! 🦶🔥",
+            "ক্রাশ অনলাইনে বইসা আছে আর কারেন্ট নাই! খাম্বা তোরে খাইছি আজকে! 🤬",
+            "লুঙ্গি কাছা মাইরা নিছি, এইবার খাম্বার খবর আছে! 🩳⚡",
+            "মশার কামড়ে পিঠ ফুলে ঢোল! ফ্যান ঘুরা বেটা খাম্বা! 🦟👊",
+            "সকাল ৭টায় ড্যাফোডিলের বাস! কারেন্ট না দিলে খাম্বা উপড়ায় ফেলমু! 🚌💥"
+        ];
+
+        const LIT_WINDOW_QUOTES = [
+            {
+                bn: "আলহামদুলিল্লাহ কারেন্ট আসছে! তাড়াতাড়ি মাল্টিপ্লাগে ফোন আর ল্যাপটপ চার্জে দে! 💡",
+                text: "আলহামদুলিল্লাহ কারেন্ট আসছে! তাড়াতাড়ি মাল্টিপ্লাগে ফোন আর ল্যাপটপ চার্জে দে! 💡",
+                phonetic: "Alhamdulillah current ashche! Taratari multiplug ey phone aar laptop charge ey de!"
+            },
+            {
+                bn: "ফ্যান ঘুরছে রে ভাই! জানটা ঠান্ডা হইলো! হাত-পা থামাইস না, পিটাইতে থাক! 🌀",
+                text: "ফ্যান ঘুরছে রে ভাই! জানটা ঠান্ডা হইলো! হাত-পা থামাইস না, পিটাইতে থাক! 🌀",
+                phonetic: "Fan ghurche re bhai! Janta thanda hoilo! Haat pa thamais na, pitaite thak!"
+            },
+            {
+                bn: "খাম্বার কিল আর লাথি একশোতে একশো কাজ করছে! চালিয়ে যা মামা! 🔥",
+                text: "খাম্বার কিল আর লাথি একশোতে একশো কাজ করছে! চালিয়ে যা মামা! 🔥",
+                phonetic: "Khambar kil aar lathi ekshote eksho kaj korche! Chaliye ja mama!"
+            },
+            {
+                bn: "রাউটার অন হইসে! তাড়াতাড়ি বিএলসিতে অ্যাসাইনমেন্ট সাবমিট দে! 💻",
+                text: "রাউটার অন হইসে! তাড়াতাড়ি বিএলসিতে অ্যাসাইনমেন্ট সাবমিট দে! 💻",
+                phonetic: "Router on hoise! Taratari BLC tey assignment submit de!"
+            }
+        ];
+
+        const KNOCKDOWN_WINDOW_QUOTES = [
+            {
+                bn: "হায় হায়! খাম্বায় উল্টা বাড়ি দিয়ে লুঙ্গি উল্টায় দিছে রে! তাড়াতাড়ি খাড়া হ! 🤣",
+                text: "হায় হায়! খাম্বায় উল্টা বাড়ি দিয়ে লুঙ্গি উল্টায় দিছে রে! তাড়াতাড়ি খাড়া হ! 🤣",
+                phonetic: "Hay hay! Khambay ulta bari diye lungi ultay dise re! Taratari khara ho!"
+            },
+            {
+                bn: "ওরে বাপরে! খাম্বার বাড়ি খেয়ে মাথা নিচে পা উপরে! আবার উঠা লাথি মার! 😵",
+                text: "ওরে বাপরে! খাম্বার বাড়ি খেয়ে মাথা নিচে পা উপরে! আবার উঠা লাথি মার! 😵",
+                phonetic: "Ore bapre! Khambar bari kheye matha niche pa upore! Abar uitha lathi maar!"
+            }
+        ];
+
+        function triggerHallShout(forceSpeak = false, customPool = null) {
+            const pool = customPool || (state.isPowerOn ? LIT_WINDOW_QUOTES : DARK_WINDOW_QUOTES);
+            const chosen = pool[Math.floor(Math.random() * pool.length)];
+            state.windowBubble = {
+                bn: chosen.bn || chosen.text,
+                text: chosen.text,
+                phonetic: chosen.phonetic,
+                timer: 230,
+                isHappy: state.isPowerOn && !customPool
+            };
+            // Always update student's own comic shout bubble when in the dark so both bubbles feel alive!
+            if (!state.isPowerOn && state.fighter.knockdownTimer <= 0 && !customPool) {
+                state.fighter.studentBubble = {
+                    text: STUDENT_DARK_SHOUTS[Math.floor(Math.random() * STUDENT_DARK_SHOUTS.length)],
+                    timer: 160
+                };
+            }
+            if (forceSpeak || voiceEnabled) {
+                speakHallComment(state.windowBubble, forceSpeak);
+            }
+        }
+
+        // Difficulty Change Listener
+        document.getElementById('difficulty-select').addEventListener('change', (e) => {
+            state.drainRate = parseFloat(e.target.value);
+        });
+
+        /**************************************************************
+         * 3. ATTACK, RAGE & KHAMBA COUNTER-ATTACK HANDLERS
+         **************************************************************/
+        // 7-Move Dynamic Hand & Leg Street-Brawl Sequence
+        const PUNCH_CYCLE_MOVES = ['left_jab', 'right_hook', 'lungi_kick', 'double_thappor', 'high_kick', 'flying_knee'];
+        const KICK_CYCLE_MOVES = ['lungi_kick', 'high_kick', 'flying_knee'];
+
+        const MOVE_LIMB_LABELS = {
+            left_jab: "👊 বাম ঘুষি! (Left Jab)",
+            right_hook: "👊 ডান হুক! (Right Hook)",
+            lungi_kick: "🦶 লুঙ্গি লাথি! (Lungi Kick)",
+            high_kick: "🦵 উড়ন্ত লাথি! (Jump Kick)",
+            double_thappor: "🖐️ ডাবল থাপ্পড়! (2-Hand Slap)",
+            flying_knee: "🦵 হাঁটুর গুঁতা! (Flying Knee)",
+            bamboo_combo: "🎋 বাঁশ + লাথি! (Bamboo Kick)"
+        };
+
+        function setFighterCombatMove(moveName) {
+            state.fighter.pose = moveName;
+            state.fighter.poseDuration = 20; // ~320ms at 60fps for crisp wind-up & full limb extension
+            state.fighter.poseTimer = 20;
+
+            if (moveName === 'high_kick') {
+                state.fighter.xOffset = 68;
+                state.fighter.yOffset = -36;
+            } else if (moveName === 'flying_knee') {
+                state.fighter.xOffset = 72;
+                state.fighter.yOffset = -28;
+            } else if (moveName === 'lungi_kick') {
+                state.fighter.xOffset = 64;
+                state.fighter.yOffset = -6;
+            } else if (moveName === 'bamboo_combo') {
+                state.fighter.xOffset = 58;
+                state.fighter.yOffset = -14;
+            } else {
+                // Hand punches & double slaps lunge right up to the Khamba
+                state.fighter.xOffset = 64;
+                state.fighter.yOffset = -4;
+            }
+
+            // Spawn floating limb impact callout right on the Khamba!
+            const limbText = MOVE_LIMB_LABELS[moveName] || "💥 ঢিশুম!";
+            state.floatingTexts.push({
+                text: limbText,
+                x: 610 + (Math.random() - 0.5) * 40,
+                y: 205 + (Math.random() - 0.5) * 55,
+                vy: -2.4,
+                scale: 1.4,
+                alpha: 1.1,
+                color: moveName.includes('kick') || moveName.includes('knee') ? '#38bdf8' : '#fde047'
+            });
+        }
+
+        function triggerAttack(type) {
+            const now = performance.now();
+
+            // Cannot attack while knocked upside down by the Khamba!
+            if (state.fighter.knockdownTimer > 0) return;
+
+            // Check cooldowns
+            if (type === 'kick' && now < state.kickCooldownUntil) return;
+            if (type === 'bamboo' && now < state.bambooCooldownUntil) return;
+            if (type === 'ultimate' && (state.rage < 100 || state.ultimateActive)) return;
+
+            // Hide initial tutorial pill
+            const tutorial = document.getElementById('tutorial-overlay');
+            if (tutorial) tutorial.style.opacity = '0';
+
+            // Combo calculation
+            if (now - state.lastHitTimestamp < 1400) {
+                state.combo++;
+            } else {
+                state.combo = 1;
+            }
+            state.lastHitTimestamp = now;
+            state.hits++;
+
+            // Visual button press feedback
+            const btnMap = { punch: 'btn-punch', kick: 'btn-kick', bamboo: 'btn-bamboo', ultimate: 'btn-ult' };
+            const btnEl = document.getElementById(btnMap[type]);
+            if (btnEl) {
+                btnEl.classList.add('pressed');
+                setTimeout(() => btnEl.classList.remove('pressed'), 100);
+            }
+
+            if (type === 'punch') {
+                // Cycles continuously through Left Jab, Right Hook, Lungi Kick, Double Slap, High Kick & Flying Knee!
+                const moveName = PUNCH_CYCLE_MOVES[state.fighter.moveIndex % PUNCH_CYCLE_MOVES.length];
+                state.fighter.moveIndex++;
+                setFighterCombatMove(moveName);
+
+                addVoltage(13);
+                addRage(9);
+                impactPole(0.19, 8, 20);
+                playSound(moveName.includes('kick') || moveName.includes('knee') ? 'kick' : 'punch');
+            }
+            else if (type === 'kick') {
+                state.kickCooldownUntil = now + 420;
+                const moveName = KICK_CYCLE_MOVES[state.fighter.moveIndex % KICK_CYCLE_MOVES.length];
+                state.fighter.moveIndex++;
+                setFighterCombatMove(moveName);
+
+                addVoltage(23);
+                addRage(16);
+                impactPole(0.30, 14, 32);
+                state.shockwaves.push({ x: 635, y: 250, r: 8, maxR: 110, alpha: 0.85 });
+                playSound('kick');
+            }
+            else if (type === 'bamboo') {
+                state.bambooCooldownUntil = now + 1700;
+                state.fighter.moveIndex++;
+                setFighterCombatMove('bamboo_combo');
+
+                addVoltage(34);
+                addRage(26);
+                impactPole(0.44, 20, 48);
+                state.shockwaves.push({ x: 640, y: 235, r: 10, maxR: 165, alpha: 1 });
+                playSound('bamboo');
+            }
+            else if (type === 'ultimate') {
+                activateExamNightUltimate();
+                return;
+            }
+
+            // Occasionally show a funny student rage shout while beating the pole in the dark
+            if (!state.isPowerOn && state.fighter.studentBubble.timer <= 0 && Math.random() < 0.28) {
+                state.fighter.studentBubble = {
+                    text: STUDENT_DARK_SHOUTS[Math.floor(Math.random() * STUDENT_DARK_SHOUTS.length)],
+                    timer: 130
+                };
+            }
+
+            // Check if the Khamba is ready to whip back and smack the student on the head!
+            if (!state.ultimateActive) {
+                state.pole.hitsUntilCounter--;
+                if (state.pole.hitsUntilCounter <= 0 && state.pole.counterAttackPhase === 0) {
+                    state.pole.hitsUntilCounter = 7 + Math.floor(Math.random() * 4);
+                    // Start elastic wind-up to whip back at student!
+                    state.pole.counterAttackPhase = 1;
+                    state.pole.bendVelocity = 0.26; // Bend far right first before snapping left!
+                }
+            }
+
+            updateHUD();
+        }
+
+        // Triggered when the Khamba whips left and hits the student's head!
+        function triggerKhambaHeadSmack() {
+            state.pole.counterAttackPhase = 0;
+            state.fighter.pose = 'knockdown';
+            state.fighter.knockdownTimer = 78; // ~1.3 seconds upside down!
+            state.fighter.poseTimer = 78;
+            state.fighter.xOffset = -25;
+            state.fighter.yOffset = 0;
+            state.combo = 0;
+
+            // Getting smacked by the Khamba makes the student EVEN ANGRIER!
+            addRage(28);
+            state.screenShake = 24;
+            playSound('headSmack');
+
+            state.fighter.studentBubble = {
+                text: "আঁইজ্ঞা গো! খাম্বায় উল্টা মাথায় মাইরা দিছে! 😵💫",
+                timer: 95
+            };
+
+            state.floatingTexts.push({
+                text: "💥 খাম্বার উল্টা বাড়ি! ধপাস! 🙃",
+                x: 455,
+                y: 145,
+                vy: -1.8,
+                scale: 1.5,
+                alpha: 1.2,
+                color: '#f43f5e'
+            });
+
+            // Hall roommates laugh/react with voice!
+            triggerHallShout(true, KNOCKDOWN_WINDOW_QUOTES);
+            updateHUD();
+        }
+
+        function activateExamNightUltimate() {
+            state.rage = 0;
+            state.ultimateActive = true;
+            state.ultimateTimer = 480; // 8 seconds at 60fps
+            state.voltage = 100;
+            state.fighter.knockdownTimer = 0;
+            document.getElementById('ult-banner').classList.remove('hidden');
+            playSound('ultimate');
+
+            // Launch a rapid 10-hit anime barrage over 1.5 seconds
+            let barrageCount = 0;
+            const allMoves = ['left_jab', 'right_hook', 'lungi_kick', 'high_kick', 'double_thappor', 'flying_knee', 'bamboo_combo'];
+            const barrageInterval = setInterval(() => {
+                barrageCount++;
+                state.hits++;
+                state.combo++;
+                state.lastHitTimestamp = performance.now();
+
+                const moveName = allMoves[barrageCount % allMoves.length];
+                setFighterCombatMove(moveName);
+
+                impactPole(0.32, 12, 28);
+                state.shockwaves.push({ x: 640, y: 210 + (Math.random() - 0.5) * 90, r: 10, maxR: 120, alpha: 0.9 });
+                playSound(barrageCount % 2 === 0 ? 'bamboo' : 'kick');
+                updateHUD();
+
+                if (barrageCount >= 10) {
+                    clearInterval(barrageInterval);
+                }
+            }, 130);
+        }
+
+        function addVoltage(amount) {
+            const comboBonus = Math.min(8, Math.floor(state.combo * 0.5));
+            state.voltage = Math.min(100, state.voltage + amount + comboBonus);
+            checkPowerState();
+        }
+
+        function addRage(amount) {
+            if (state.ultimateActive) return;
+            // EXTREME RAGE WHEN POWER IS OUT: 1.5x faster rage gain in darkness!
+            const darknessMultiplier = state.isPowerOn ? 1.0 : 1.55;
+            state.rage = Math.min(100, state.rage + Math.round(amount * darknessMultiplier));
+        }
+
+        function impactPole(bendImpulse, shakeAmount, sparkCount) {
+            state.pole.bendVelocity += bendImpulse;
+            state.pole.flashTimer = 6;
+            state.pole.damageCracks = Math.min(5, Math.floor(state.hits / 6));
+            state.screenShake = shakeAmount;
+
+            const impactX = 635;
+            const impactY = 230 + (Math.random() - 0.5) * 60;
+
+            for (let i = 0; i < sparkCount; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = 3 + Math.random() * 11;
+                state.sparks.push({
+                    x: impactX,
+                    y: impactY,
+                    vx: Math.cos(angle) * speed - 2,
+                    vy: Math.sin(angle) * speed - 3,
+                    life: 18 + Math.random() * 20,
+                    maxLife: 38,
+                    color: Math.random() > 0.35 ? '#facc15' : (Math.random() > 0.5 ? '#38bdf8' : '#ffffff'),
+                    size: 2.5 + Math.random() * 3.5
+                });
+            }
+
+            for (let i = 0; i < 4; i++) {
+                state.smokePuffs.push({
+                    x: 640 + (Math.random() - 0.5) * 40,
+                    y: 205 + (Math.random() - 0.5) * 20,
+                    vx: (Math.random() - 0.5) * 1.5,
+                    vy: -1.2 - Math.random() * 1.8,
+                    r: 8 + Math.random() * 10,
+                    alpha: 0.65
+                });
+            }
+
+            const word = BANGLISH_HIT_WORDS[Math.floor(Math.random() * BANGLISH_HIT_WORDS.length)];
+            state.floatingTexts.push({
+                text: word,
+                x: 520 + (Math.random() - 0.5) * 120,
+                y: 165 + (Math.random() - 0.5) * 70,
+                vy: -2.2,
+                scale: 1.35,
+                alpha: 1,
+                color: Math.random() > 0.4 ? '#fde047' : '#fb7185'
+            });
+        }
+
+        function checkPowerState() {
+            const shouldBeOn = state.voltage >= 30 || state.ultimateActive;
+
+            if (shouldBeOn && !state.isPowerOn) {
+                state.isPowerOn = true;
+                document.body.className = "power-on-bg min-h-screen flex flex-col justify-between items-center p-2 sm:p-4";
+                const stage = document.getElementById('stage-container');
+                stage.classList.remove('stage-dark');
+                stage.classList.add('stage-lit');
+
+                triggerHallShout(true, LIT_WINDOW_QUOTES);
+                playSound('powerOn');
+                updateHUD();
+            }
+            else if (!shouldBeOn && state.isPowerOn) {
+                state.isPowerOn = false;
+                document.body.className = "power-off-bg min-h-screen flex flex-col justify-between items-center p-2 sm:p-4";
+                const stage = document.getElementById('stage-container');
+                stage.classList.remove('stage-lit');
+                stage.classList.add('stage-dark');
+
+                // SUDDEN RAGE SPIKE WHEN CURRENT GOES OUT!
+                addRage(25);
+                state.screenShake = 15;
+                state.fighter.studentBubble = {
+                    text: STUDENT_DARK_SHOUTS[Math.floor(Math.random() * STUDENT_DARK_SHOUTS.length)],
+                    timer: 165
+                };
+                state.floatingTexts.push({
+                    text: "🤬 কারেন্ট নাই! হাত-পা চালাও! 🔥",
+                    x: 450,
+                    y: 160,
+                    vy: -2.0,
+                    scale: 1.4,
+                    alpha: 1.2,
+                    color: '#ef4444'
+                });
+
+                triggerHallShout(true, DARK_WINDOW_QUOTES);
+                playSound('powerOff');
+                updateHUD();
+            }
+        }
+
+        function updateHUD() {
+            document.getElementById('hit-count').innerText = state.hits;
+            document.getElementById('rage-pct').innerText = `${Math.floor(state.rage)}%`;
+            document.getElementById('rage-bar').style.width = `${state.rage}%`;
+
+            document.getElementById('voltage-pct').innerText = `${Math.floor(state.voltage)}%`;
+            document.getElementById('voltage-bar').style.width = `${state.voltage}%`;
+
+            // Combo badge
+            const comboBadge = document.getElementById('combo-badge');
+            if (state.combo > 1) {
+                comboBadge.classList.remove('hidden');
+                comboBadge.innerText = `${state.combo}x`;
+            } else {
+                comboBadge.classList.add('hidden');
+            }
+
+            // Ultimate button state & Extreme Darkness Rage Indicator
+            const ultBtn = document.getElementById('btn-ult');
+            const ultStatus = document.getElementById('ult-status-text');
+            const rageHint = document.getElementById('rage-hint');
+
+            if (state.ultimateActive) {
+                ultBtn.disabled = true;
+                ultBtn.classList.remove('ult-ready');
+                ultStatus.innerText = "RAGE ACTIVE! ⚡";
+                rageHint.innerText = "⚡ UNLIMITED POWER! ⚡";
+            } else if (state.rage >= 100) {
+                ultBtn.disabled = false;
+                ultBtn.classList.add('ult-ready');
+                ultStatus.innerText = "PRESS SPACE! 🔥";
+                rageHint.innerText = "🔥 ULTIMATE READY!";
+            } else {
+                ultBtn.disabled = true;
+                ultBtn.classList.remove('ult-ready');
+                ultStatus.innerText = `Needs 100% (${Math.floor(state.rage)}%)`;
+                if (!state.isPowerOn) {
+                    rageHint.innerText = "🤬 চরম রাগ! কারেন্ট নাই (2x Rage)";
+                    rageHint.className = "text-red-400 font-extrabold truncate animate-pulse";
+                } else {
+                    rageHint.innerText = "Fill Rage for Ultimate!";
+                    rageHint.className = "text-amber-400 font-bold truncate";
+                }
+            }
+
+            // Power Status Pill
+            const statusPill = document.getElementById('status-pill');
+            const statusIcon = document.getElementById('status-icon');
+            const powerStatus = document.getElementById('power-status');
+
+            if (state.isPowerOn) {
+                statusPill.className = "w-full py-1 px-1.5 rounded-lg border-2 border-emerald-400 bg-emerald-950/90 text-emerald-300 font-bold text-[10px] sm:text-xs leading-tight shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all";
+                statusIcon.innerText = "💡";
+                powerStatus.innerText = "CURRENT ASHCHE!";
+            } else {
+                statusPill.className = "w-full py-1 px-1.5 rounded-lg border-2 border-red-500 bg-red-950 text-red-200 font-bold text-[10px] sm:text-xs leading-tight shadow-[0_0_15px_rgba(239,68,68,0.5)] transition-all animate-pulse";
+                statusIcon.innerText = "🤬";
+                powerStatus.innerText = "চরম অন্ধকার!";
+            }
+
+            // Khamba condition text
+            const condEl = document.getElementById('transformer-condition');
+            if (state.hits > 35) condEl.innerText = "ট্রান্সফরমার লিক! 🔥";
+            else if (state.hits > 15) condEl.innerText = "খাম্বা রাবারের মতো বাঁকা!";
+            else if (state.hits > 5) condEl.innerText = "খাম্বা দুলছে!";
+        }
+
+        // Direct Click / Tap on Stage Canvas
+        canvas.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            const now = performance.now();
+            if (state.combo > 0 && state.combo % 5 === 0 && now >= state.kickCooldownUntil) {
+                triggerAttack('kick');
+            } else {
+                triggerAttack('punch');
+            }
+        });
+
+        // Keyboard Shortcuts (Supports both Z/X/C and A/S/D and J/K/L + Space)
+        window.addEventListener('keydown', (e) => {
+            if (e.repeat) return;
+            const key = e.key.toLowerCase();
+            if (key === 'a' || key === 'j' || key === 'z') {
+                e.preventDefault();
+                triggerAttack('punch');
+            } else if (key === 's' || key === 'k' || key === 'x') {
+                e.preventDefault();
+                triggerAttack('kick');
+            } else if (key === 'd' || key === 'l' || key === 'c') {
+                e.preventDefault();
+                triggerAttack('bamboo');
+            } else if (key === ' ') {
+                e.preventDefault();
+                if (state.rage >= 100 && !state.ultimateActive) {
+                    triggerAttack('ultimate');
+                } else {
+                    triggerAttack('punch');
+                }
+            }
+        });
+
+        /**************************************************************
+         * 4. CUSTOM VECTOR SCENE & RIGGED CHARACTER RENDERING
+         **************************************************************/
+        // Helper to compute flexible multi-segment point along the bent Khamba
+        function getKhambaPoint(t) {
+            // t in [0, 1] from base (0) to top (1)
+            const baseX = 650;
+            const baseY = 420;
+            const totalHeight = 355;
+            // Quadratic/cubic elastic curve so the top whips dramatically
+            const angle = state.pole.bendAngle * Math.pow(t, 1.45);
+            const x = baseX + Math.sin(angle) * (totalHeight * t);
+            const y = baseY - Math.cos(angle * 0.7) * (totalHeight * t);
+            return { x, y, angle };
+        }
+
+        function drawScene() {
+            ctx.save();
+
+            // Apply Screen Shake
+            if (state.screenShake > 0.2) {
+                const dx = (Math.random() - 0.5) * state.screenShake * 1.6;
+                const dy = (Math.random() - 0.5) * state.screenShake * 1.6;
+                ctx.translate(dx, dy);
+            }
+
+            // 1. SKY BACKGROUND
+            const skyGrad = ctx.createLinearGradient(0, 0, 0, H);
+            if (state.isPowerOn) {
+                skyGrad.addColorStop(0, '#131836');
+                skyGrad.addColorStop(0.6, '#2b2240');
+                skyGrad.addColorStop(1, '#3b2d38');
+            } else {
+                skyGrad.addColorStop(0, '#050711');
+                skyGrad.addColorStop(0.6, '#14091c');
+                skyGrad.addColorStop(1, '#1c0c1b');
+            }
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, W, H);
+
+            // Stars & Crescent Moon
+            ctx.fillStyle = state.isPowerOn ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.85)';
+            [[80, 50], [180, 35], [290, 75], [440, 40], [550, 65], [790, 45], [850, 85]].forEach(([sx, sy]) => {
+                ctx.beginPath();
+                ctx.arc(sx, sy, 1.5, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Moon
+            ctx.save();
+            ctx.fillStyle = '#fef08a';
+            ctx.shadowColor = '#fef08a';
+            ctx.shadowBlur = 20;
+            ctx.beginPath();
+            ctx.arc(110, 75, 26, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            // 2. CHANGAON STUDENT MESS / HOSTEL BUILDINGS IN BACKGROUND
+            drawChangaonHostels();
+
+            // 3. STREET / ROAD SURFACE
+            ctx.fillStyle = state.isPowerOn ? '#26242b' : '#0e1017';
+            ctx.fillRect(0, 415, W, 85);
+            ctx.fillStyle = state.isPowerOn ? '#475569' : '#1e293b';
+            ctx.fillRect(0, 415, W, 6);
+
+            // 4. OVERHEAD TANGLED PALLI BIDYUT CABLES
+            drawOverheadCables();
+
+            // 5. THE OPPONENT: FLEXIBLE PALLI BIDYUT POLE WITH "খাম্বা" WRITTEN ON IT
+            drawElectricKhamba();
+
+            // 6. THE FIGHTER: ANGRY DIU STUDENT (WITH EXTREME RAGE & UPSIDE-DOWN KNOCKDOWN)
+            drawDIUFighter();
+
+            // 7. PARTICLES: SPARKS, SMOKE, EAR STEAM, SHOCKWAVES, FLOATING BANGLISH TEXT
+            drawEffects();
+
+            ctx.restore();
+        }
+
+        function drawChangaonHostels() {
+            // Distant Right Hostel Building
+            ctx.fillStyle = state.isPowerOn ? '#1e2436' : '#0b0e19';
+            ctx.fillRect(340, 140, 175, 275);
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(340, 140, 175, 275);
+
+            // Windows on Distant Building
+            for (let r = 0; r < 4; r++) {
+                for (let c = 0; c < 3; c++) {
+                    const wx = 358 + c * 50;
+                    const wy = 165 + r * 58;
+                    ctx.fillStyle = state.isPowerOn ? '#fde047' : '#151928';
+                    if (state.isPowerOn) {
+                        ctx.shadowColor = '#facc15';
+                        ctx.shadowBlur = 10;
+                    }
+                    ctx.fillRect(wx, wy, 32, 36);
+                    ctx.shadowBlur = 0;
+                }
+            }
+
+            // Main Left Building: "CHANGAON BACHELOR MESS"
+            ctx.fillStyle = state.isPowerOn ? '#252b42' : '#0f1424';
+            ctx.fillRect(35, 105, 285, 310);
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(35, 105, 285, 310);
+
+            // Roof Water Tank
+            ctx.fillStyle = '#334155';
+            ctx.fillRect(75, 70, 55, 35);
+            ctx.fillStyle = '#475569';
+            ctx.fillRect(85, 63, 35, 7);
+
+            // Signboard: "CHANGAON DIU STUDENT MESS"
+            ctx.fillStyle = state.isPowerOn ? '#b91c1c' : '#450a0a';
+            ctx.fillRect(55, 118, 245, 28);
+            ctx.strokeStyle = state.isPowerOn ? '#fde047' : '#7f1d1d';
+            ctx.strokeRect(55, 118, 245, 28);
+            ctx.fillStyle = state.isPowerOn ? '#fef08a' : '#94a3b8';
+            ctx.font = 'bold 13px "Chakra Petch", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('🏠 CHANGAON DIU BACHELOR MESS', 177, 137);
+
+            // Featured Large Student Room Window (with Spinning Ceiling Fan!)
+            const roomX = 65;
+            const roomY = 162;
+            const roomW = 135;
+            const roomH = 85;
+
+            ctx.save();
+            ctx.fillStyle = state.isPowerOn ? '#fef08a' : '#161b2e';
+            if (state.isPowerOn) {
+                ctx.shadowColor = '#facc15';
+                ctx.shadowBlur = 22;
+            }
+            ctx.fillRect(roomX, roomY, roomW, roomH);
+            ctx.shadowBlur = 0;
+
+            ctx.beginPath();
+            ctx.rect(roomX, roomY, roomW, roomH);
+            ctx.clip();
+
+            // Ceiling Fan inside the room
+            const fanCenterX = roomX + roomW / 2;
+            const fanCenterY = roomY + 24;
+            ctx.strokeStyle = state.isPowerOn ? '#78350f' : '#334155';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(fanCenterX, roomY);
+            ctx.lineTo(fanCenterX, fanCenterY);
+            ctx.stroke();
+
+            const bladeSpan = Math.cos(state.fanAngle) * 34;
+            ctx.lineWidth = 5;
+            ctx.beginPath();
+            ctx.moveTo(fanCenterX - bladeSpan, fanCenterY);
+            ctx.lineTo(fanCenterX + bladeSpan, fanCenterY);
+            ctx.stroke();
+
+            ctx.fillStyle = state.isPowerOn ? '#451a03' : '#475569';
+            ctx.beginPath();
+            ctx.arc(fanCenterX, fanCenterY, 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Shouting roommate silhouette inside window
+            const roommateBounce = state.windowBubble.timer > 0 ? Math.abs(Math.sin(performance.now() * 0.02)) * 5 : 0;
+            ctx.fillStyle = state.isPowerOn ? '#451a03' : '#090d16';
+            ctx.beginPath();
+            ctx.arc(roomX + 40, roomY + 60 - roommateBounce, 11, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillRect(roomX + 26, roomY + 71 - roommateBounce, 28, 20);
+
+            // Glowing red eyes on roommate in the dark!
+            if (!state.isPowerOn) {
+                ctx.fillStyle = '#ef4444';
+                ctx.beginPath();
+                ctx.arc(roomX + 37, roomY + 59 - roommateBounce, 2, 0, Math.PI * 2);
+                ctx.arc(roomX + 44, roomY + 59 - roommateBounce, 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Laptop on desk
+            ctx.fillStyle = state.isPowerOn ? '#38bdf8' : '#1e293b';
+            ctx.fillRect(roomX + 65, roomY + 68, 22, 14);
+
+            // Window grille bars
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(roomX, roomY, roomW, roomH);
+            ctx.beginPath();
+            ctx.moveTo(roomX + roomW / 2, roomY);
+            ctx.lineTo(roomX + roomW / 2, roomY + roomH);
+            ctx.stroke();
+            ctx.restore();
+
+            // Other windows on Main Hostel
+            const smallWindows = [
+                [220, 162], [220, 212],
+                [65, 268], [142, 268], [220, 268],
+                [65, 330], [142, 330], [220, 330]
+            ];
+            smallWindows.forEach(([wx, wy]) => {
+                ctx.fillStyle = state.isPowerOn ? '#fde047' : '#161b2e';
+                ctx.fillRect(wx, wy, 58, 42);
+                ctx.strokeStyle = '#0f172a';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(wx, wy, 58, 42);
+            });
+
+            // Speech Bubble with Voice Wave Icon coming from the Student Mess Window!
+            if (state.windowBubble.timer > 0) {
+                ctx.save();
+                const bx = 215;
+                const by = 148;
+                const displayStr = (voiceEnabled ? "🔊 " : "💬 ") + state.windowBubble.text;
+                ctx.font = 'bold 13px "Hind Siliguri", sans-serif';
+                const textWidth = Math.min(410, ctx.measureText(displayStr).width + 26);
+
+                ctx.fillStyle = state.windowBubble.isHappy ? '#ecfdf5' : '#fff1f2';
+                ctx.strokeStyle = state.windowBubble.isHappy ? '#10b981' : '#f43f5e';
+                ctx.lineWidth = 3;
+
+                ctx.beginPath();
+                ctx.roundRect(bx - textWidth / 2, by - 36, textWidth, 30, 10);
+                ctx.fill();
+                ctx.stroke();
+
+                // Speech bubble pointer tail toward window
+                ctx.beginPath();
+                ctx.moveTo(135, by - 6);
+                ctx.lineTo(120, by + 12);
+                ctx.lineTo(155, by - 6);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = '#0f172a';
+                ctx.textAlign = 'center';
+                ctx.fillText(displayStr, bx, by - 16);
+                ctx.restore();
+            }
+        }
+
+        function drawOverheadCables() {
+            const topPt = getKhambaPoint(0.93);
+            const poleTopX = topPt.x;
+            const poleTopY = topPt.y;
+            const whip = Math.sin(state.pole.bendAngle * 8) * 24;
+
+            ctx.strokeStyle = '#090a0f';
+            ctx.lineWidth = 3;
+
+            for (let i = 0; i < 3; i++) {
+                ctx.beginPath();
+                ctx.moveTo(280, 125 + i * 18);
+                ctx.quadraticCurveTo(465, 175 + i * 22 + whip, poleTopX - 30, poleTopY + i * 12);
+                ctx.stroke();
+            }
+
+            for (let i = 0; i < 3; i++) {
+                ctx.beginPath();
+                ctx.moveTo(poleTopX + 30, poleTopY + i * 12);
+                ctx.quadraticCurveTo(780, 150 + i * 18 - whip, W + 20, 105 + i * 15);
+                ctx.stroke();
+            }
+        }
+
+        function drawElectricKhamba() {
+            // 1. MULTI-SEGMENT FLEXIBLE CONCRETE POLE BODY (Bends like rubber!)
+            const segments = 14;
+            const leftPts = [];
+            const rightPts = [];
+
+            for (let i = 0; i <= segments; i++) {
+                const t = i / segments;
+                const pt = getKhambaPoint(t);
+                const halfW = 24 * (1 - t * 0.38); // Taper from 24px at base to ~15px at top
+                const nx = Math.cos(pt.angle);
+                const ny = Math.sin(pt.angle);
+                leftPts.push({ x: pt.x - nx * halfW, y: pt.y - ny * halfW });
+                rightPts.push({ x: pt.x + nx * halfW, y: pt.y + ny * halfW });
+            }
+
+            ctx.save();
+            ctx.fillStyle = state.pole.flashTimer > 0 ? '#fef08a' : '#94a3b8';
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 3;
+
+            ctx.beginPath();
+            ctx.moveTo(leftPts[0].x, leftPts[0].y);
+            for (let i = 1; i <= segments; i++) {
+                ctx.lineTo(leftPts[i].x, leftPts[i].y);
+            }
+            for (let i = segments; i >= 0; i--) {
+                ctx.lineTo(rightPts[i].x, rightPts[i].y);
+            }
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // 2. BOLD BENGALI "খাম্বা" STENCIL WRITTEN DIRECTLY ON THE POLE BODY!
+            // Flexes naturally along the bent segments of the pole!
+            const khambaBadges = [
+                { t: 0.36, syl: 'খা' },
+                { t: 0.21, syl: 'ম্বা' }
+            ];
+            khambaBadges.forEach((b) => {
+                const pt = getKhambaPoint(b.t);
+                ctx.save();
+                ctx.translate(pt.x, pt.y);
+                ctx.rotate(pt.angle);
+
+                // Yellow/Red high-contrast stencil sign painted on the pole
+                ctx.fillStyle = '#facc15';
+                ctx.strokeStyle = '#dc2626';
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.roundRect(-19, -22, 38, 44, 5);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.font = '900 24px "Hind Siliguri", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = '#000000';
+                ctx.strokeText(b.syl, 0, 2);
+                ctx.fillStyle = '#dc2626';
+                ctx.fillText(b.syl, 0, 2);
+                ctx.restore();
+            });
+
+            // Dynamic Cracks on the Pole based on hits
+            if (state.pole.damageCracks > 0) {
+                ctx.strokeStyle = '#0f172a';
+                ctx.lineWidth = 2.5;
+                for (let c = 0; c < state.pole.damageCracks; c++) {
+                    const crackPt = getKhambaPoint(0.15 + c * 0.12);
+                    ctx.save();
+                    ctx.translate(crackPt.x, crackPt.y);
+                    ctx.rotate(crackPt.angle);
+                    ctx.beginPath();
+                    ctx.moveTo(-16, 0);
+                    ctx.lineTo(-2, 7);
+                    ctx.lineTo(8, -5);
+                    ctx.lineTo(16, 4);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            }
+
+            // 3. "CHANGAON SUB-STATION" Rusty Transformer Box (at t = 0.62)
+            const transPt = getKhambaPoint(0.62);
+            ctx.save();
+            ctx.translate(transPt.x, transPt.y);
+            ctx.rotate(transPt.angle);
+
+            ctx.fillStyle = '#334155';
+            ctx.fillRect(-46, -32, 92, 64);
+
+            ctx.fillStyle = state.pole.flashTimer > 0 ? '#fde047' : '#475569';
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.roundRect(-38, -38, 76, 76, 6);
+            ctx.fill();
+            ctx.stroke();
+
+            // Danger Plate with Bengali "খাম্বা" label
+            ctx.fillStyle = '#facc15';
+            ctx.fillRect(-30, -25, 60, 26);
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(-30, -25, 60, 26);
+
+            ctx.fillStyle = '#b91c1c';
+            ctx.font = 'bold 12px "Hind Siliguri", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('⚡ খাম্বা ১১কেভি', 0, -8);
+
+            // Angry eyes on the Khamba when counter-attacking!
+            if (state.pole.counterAttackPhase > 0) {
+                ctx.fillStyle = '#ef4444';
+                ctx.beginPath();
+                ctx.arc(-14, 10, 5, 0, Math.PI * 2);
+                ctx.arc(14, 10, 5, 0, Math.PI * 2);
+                ctx.fill();
+            } else {
+                ctx.fillStyle = '#e2e8f0';
+                ctx.font = 'bold 9px sans-serif';
+                ctx.fillText('PALLI BIDYUT #420', 0, 22);
+            }
+            ctx.restore();
+
+            // 4. Top Cross-Arm, Ceramic Insulators & Street Lamp (at t = 0.93)
+            const topPt = getKhambaPoint(0.93);
+            ctx.save();
+            ctx.translate(topPt.x, topPt.y);
+            ctx.rotate(topPt.angle);
+
+            ctx.fillStyle = '#475569';
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 2.5;
+            ctx.fillRect(-55, -6, 110, 12);
+            ctx.strokeRect(-55, -6, 110, 12);
+
+            [-42, -20, 20, 42].forEach((ix) => {
+                ctx.fillStyle = '#38bdf8';
+                ctx.beginPath();
+                ctx.arc(ix, -12, 6, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+            });
+
+            // Street Lamp Arm & Big Bulb
+            ctx.strokeStyle = '#64748b';
+            ctx.lineWidth = 6;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(-12, 18);
+            ctx.quadraticCurveTo(-65, -18, -105, 8);
+            ctx.stroke();
+
+            // Lamp Hood
+            ctx.fillStyle = '#334155';
+            ctx.beginPath();
+            ctx.moveTo(-125, 8);
+            ctx.lineTo(-85, 8);
+            ctx.lineTo(-95, -4);
+            ctx.lineTo(-115, -4);
+            ctx.closePath();
+            ctx.fill();
+
+            if (state.isPowerOn) {
+                ctx.save();
+                const coneGrad = ctx.createLinearGradient(-105, 12, -105, 330);
+                coneGrad.addColorStop(0, 'rgba(253, 224, 71, 0.55)');
+                coneGrad.addColorStop(0.5, 'rgba(250, 204, 21, 0.22)');
+                coneGrad.addColorStop(1, 'rgba(250, 204, 21, 0.0)');
+                ctx.fillStyle = coneGrad;
+                ctx.beginPath();
+                ctx.moveTo(-115, 12);
+                ctx.lineTo(-290, 330);
+                ctx.lineTo(75, 330);
+                ctx.lineTo(-95, 12);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.fillStyle = '#fef08a';
+                ctx.shadowColor = '#facc15';
+                ctx.shadowBlur = 35;
+                ctx.beginPath();
+                ctx.arc(-105, 14, 14, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            } else {
+                ctx.fillStyle = '#1e293b';
+                ctx.strokeStyle = '#475569';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(-105, 14, 12, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+            }
+
+            ctx.restore();
+            ctx.restore();
+        }
+
+        // Helper to draw a 2-segment articulated arm (Shoulder -> Elbow -> Hand/Fist/Palm)
+        function drawArticulatedArm(shoulderX, shoulderY, elbowX, elbowY, handX, handY, skinColor, isOpenPalm, fistScale = 1, glowColor = null) {
+            ctx.save();
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            // Dark outline for comic look
+            ctx.strokeStyle = '#1c1917';
+            ctx.lineWidth = 19;
+            ctx.beginPath();
+            ctx.moveTo(shoulderX, shoulderY);
+            ctx.lineTo(elbowX, elbowY);
+            ctx.lineTo(handX, handY);
+            ctx.stroke();
+
+            // Inner skin fill
+            ctx.strokeStyle = skinColor;
+            ctx.lineWidth = 13;
+            ctx.beginPath();
+            ctx.moveTo(shoulderX, shoulderY);
+            ctx.lineTo(elbowX, elbowY);
+            ctx.lineTo(handX, handY);
+            ctx.stroke();
+
+            // Elbow joint crease
+            ctx.fillStyle = '#9a3412';
+            ctx.beginPath();
+            ctx.arc(elbowX, elbowY, 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Hand / Fist / Open Slap Palm at end of forearm
+            const angle = Math.atan2(handY - elbowY, handX - elbowX);
+            ctx.translate(handX, handY);
+            ctx.rotate(angle);
+            ctx.scale(fistScale, fistScale);
+
+            if (glowColor) {
+                ctx.shadowColor = glowColor;
+                ctx.shadowBlur = 18;
+            }
+
+            if (isOpenPalm) {
+                // Expressive Open Slapping Hand ("থাপ্পড়") with 5 spread fingers!
+                ctx.fillStyle = glowColor || skinColor;
+                ctx.strokeStyle = '#1c1917';
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.roundRect(-8, -11, 18, 22, 6);
+                ctx.fill();
+                ctx.stroke();
+
+                // 5 spread fingers
+                [-9, -4, 1, 6, 10].forEach((fy, idx) => {
+                    const len = idx === 0 ? 10 : 15;
+                    ctx.beginPath();
+                    ctx.roundRect(6, fy - 2, len, 4.5, 2);
+                    ctx.fill();
+                    ctx.stroke();
+                });
+            } else {
+                // Big Expressive Brawler Fist with Knuckles
+                ctx.fillStyle = glowColor || '#ef4444';
+                ctx.strokeStyle = '#1c1917';
+                ctx.lineWidth = 2.8;
+                ctx.beginPath();
+                ctx.roundRect(-10, -13, 24, 26, 8);
+                ctx.fill();
+                ctx.stroke();
+
+                // Knuckle ridges
+                ctx.fillStyle = '#fef08a';
+                [-7, -1, 5].forEach(ky => {
+                    ctx.beginPath();
+                    ctx.arc(11, ky, 2.8, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            }
+
+            ctx.restore();
+        }
+
+        // Helper to draw a 2-segment articulated leg (Hip -> Knee -> Ankle -> Foot + Chappal Sandal)
+        function drawArticulatedLeg(hipX, hipY, kneeX, kneeY, footX, footY, skinColor, isKicking = false, glowColor = null) {
+            ctx.save();
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            // Outer comic outline
+            ctx.strokeStyle = '#1c1917';
+            ctx.lineWidth = 21;
+            ctx.beginPath();
+            ctx.moveTo(hipX, hipY);
+            ctx.lineTo(kneeX, kneeY);
+            ctx.lineTo(footX, footY);
+            ctx.stroke();
+
+            // Inner leg skin
+            ctx.strokeStyle = skinColor;
+            ctx.lineWidth = 15;
+            ctx.beginPath();
+            ctx.moveTo(hipX, hipY);
+            ctx.lineTo(kneeX, kneeY);
+            ctx.lineTo(footX, footY);
+            ctx.stroke();
+
+            // Knee cap highlight
+            ctx.fillStyle = isKicking ? '#fde047' : '#b45309';
+            ctx.beginPath();
+            ctx.arc(kneeX, kneeY, isKicking ? 6.5 : 4.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Foot + Desi Rubber Chappal (Sandal)
+            const shinAngle = Math.atan2(footY - kneeY, footX - kneeX);
+            ctx.translate(footX, footY);
+            ctx.rotate(isKicking ? shinAngle * 0.35 : 0);
+
+            if (glowColor) {
+                ctx.shadowColor = glowColor;
+                ctx.shadowBlur = 18;
+            }
+
+            // Foot shape
+            ctx.fillStyle = skinColor;
+            ctx.strokeStyle = '#1c1917';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.roundRect(-8, -7, 28, 13, 5);
+            ctx.fill();
+            ctx.stroke();
+
+            // Blue/Yellow Mess Chappal Sole & Strap
+            ctx.fillStyle = '#facc15';
+            ctx.fillRect(-10, 4, 32, 5);
+            ctx.strokeRect(-10, 4, 32, 5);
+            ctx.strokeStyle = '#2563eb';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(2, 4);
+            ctx.lineTo(10, -6);
+            ctx.lineTo(18, 4);
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        function drawDIUFighter() {
+            const isDarkRage = !state.isPowerOn;
+            const isKnockdown = state.fighter.knockdownTimer > 0;
+            const pose = state.fighter.pose;
+            const now = performance.now();
+
+            // Calculate normalized attack progress (0 -> 1) with snappy impact extension peak
+            const progress = state.fighter.poseTimer > 0
+                ? 1 - (state.fighter.poseTimer / (state.fighter.poseDuration || 20))
+                : 0;
+            // Smooth attack curve: quick wind-up, full extension held across middle frames, smooth return
+            const thrust = state.fighter.poseTimer > 0 ? Math.sin(progress * Math.PI) : 0;
+
+            // In Darkness Rage Mode, character paces & stomps aggressively even while idle!
+            const stompCycle = now * (isDarkRage ? 0.022 : 0.009);
+            const leftStomp = (pose === 'idle' && !isKnockdown)
+                ? Math.max(0, Math.sin(stompCycle)) * (isDarkRage ? 22 : 4)
+                : 0;
+            const rightStomp = (pose === 'idle' && !isKnockdown)
+                ? Math.max(0, -Math.sin(stompCycle)) * (isDarkRage ? 22 : 4)
+                : 0;
+            const idleBounce = Math.sin(stompCycle * 2) * (isDarkRage ? 7 : 4);
+            const ragePacingX = (isDarkRage && pose === 'idle' && !isKnockdown) ? Math.sin(now * 0.006) * 14 : 0;
+
+            const baseX = 468 + state.fighter.xOffset * thrust + ragePacingX;
+            const baseY = 420 + state.fighter.yOffset * thrust;
+            const skinColor = isDarkRage ? '#dc5632' : '#d97742';
+
+            ctx.save();
+            ctx.translate(baseX, baseY);
+
+            // Ground Shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.45)';
+            ctx.beginPath();
+            ctx.ellipse(0, -(state.fighter.yOffset * thrust), 56, 13, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Student Speech Bubble (for Knockdown or Darkness Rage!)
+            if (state.fighter.studentBubble.timer > 0) {
+                ctx.save();
+                const sbx = -10;
+                const sby = -252;
+                ctx.font = 'bold 13px "Hind Siliguri", sans-serif';
+                const bw = Math.min(390, ctx.measureText(state.fighter.studentBubble.text).width + 26);
+                ctx.fillStyle = '#fef08a';
+                ctx.strokeStyle = '#dc2626';
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.roundRect(sbx - bw / 2, sby - 32, bw, 30, 8);
+                ctx.fill();
+                ctx.stroke();
+
+                // Tail pointing to student head
+                ctx.beginPath();
+                ctx.moveTo(sbx - 8, sby - 2);
+                ctx.lineTo(sbx, sby + 10);
+                ctx.lineTo(sbx + 8, sby - 2);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = '#000';
+                ctx.textAlign = 'center';
+                ctx.fillText(state.fighter.studentBubble.text, sbx, sby - 12);
+                ctx.restore();
+            }
+
+            // IF KNOCKED UPSIDE DOWN BY THE KHAMBA ("উল্টে পড়ে যাওয়া")!
+            if (isKnockdown) {
+                ctx.save();
+                const wobble = Math.sin(now * 0.035) * 0.16;
+                ctx.translate(0, -95);
+                ctx.rotate(Math.PI + wobble);
+                ctx.translate(0, 95);
+            }
+
+            // EXTREME DARKNESS RAGE AURA OR ULTIMATE AURA!
+            if (state.ultimateActive || state.rage >= 100 || isDarkRage) {
+                ctx.save();
+                const auraScale = 1 + Math.sin(now * 0.03) * 0.1;
+                ctx.scale(auraScale, auraScale);
+                const auraGrad = ctx.createRadialGradient(0, -95, 10, 0, -95, 105);
+                if (state.ultimateActive || state.rage >= 100) {
+                    auraGrad.addColorStop(0, 'rgba(250, 204, 21, 0.7)');
+                    auraGrad.addColorStop(0.6, 'rgba(239, 68, 68, 0.4)');
+                    auraGrad.addColorStop(1, 'rgba(239, 68, 68, 0)');
+                } else {
+                    auraGrad.addColorStop(0, 'rgba(239, 68, 68, 0.55)');
+                    auraGrad.addColorStop(0.6, 'rgba(168, 85, 247, 0.25)');
+                    auraGrad.addColorStop(1, 'rgba(239, 68, 68, 0)');
+                }
+                ctx.fillStyle = auraGrad;
+                ctx.beginPath();
+                ctx.ellipse(0, -95, 88, 122, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            // =========================================================================
+            // 1. MULTI-JOINT ARTICULATED LEGS (Both Left & Right Legs Active!)
+            // =========================================================================
+            // Default Stance Coordinates (with active angry foot-stomping in the dark!)
+            let lHipX = -18, lHipY = -62 + idleBounce * 0.4;
+            let lKneeX = -22, lKneeY = -32 - leftStomp * 0.7;
+            let lFootX = -24, lFootY = -5 - leftStomp;
+
+            let rHipX = 16, rHipY = -62 + idleBounce * 0.4;
+            let rKneeX = 24, rKneeY = -32 - rightStomp * 0.7;
+            let rFootX = 26, rFootY = -5 - rightStomp;
+
+            let lLegKick = false, rLegKick = false;
+            let legGlow = null;
+
+            if (isKnockdown) {
+                // Frantically pedaling both legs in the air while flipped upside down!
+                const flail = Math.sin(now * 0.05) * 28;
+                lKneeX = -32 - flail * 0.5; lKneeY = -35 + flail;
+                lFootX = -42 - flail;       lFootY = -8 - flail;
+                rKneeX = 32 + flail * 0.5;  rKneeY = -35 - flail;
+                rFootX = 42 + flail;        rFootY = -8 + flail;
+            }
+            else if (pose === 'lungi_kick') {
+                // Left leg plants firmly while Right Leg snaps straight into the Khamba!
+                lKneeX = -26; lKneeY = -30; lFootX = -32; lFootY = -4;
+                rKneeX = 16 + 48 * thrust;
+                rKneeY = -75 - 18 * thrust;
+                rFootX = 26 + 98 * thrust;
+                rFootY = -55 - 38 * thrust;
+                rLegKick = true;
+                legGlow = '#facc15';
+            }
+            else if (pose === 'high_kick') {
+                // High Jumping Roundhouse Kick: Left leg whips high into the transformer box!
+                rKneeX = 12; rKneeY = -26; rFootX = 6; rFootY = -2;
+                lKneeX = 10 + 52 * thrust;
+                lKneeY = -92 - 28 * thrust;
+                lFootX = 20 + 108 * thrust;
+                lFootY = -85 - 68 * thrust;
+                lLegKick = true;
+                legGlow = '#38bdf8';
+            }
+            else if (pose === 'flying_knee') {
+                // Flying Knee Strike: Right knee drives deep into the pole + foot stomp!
+                lKneeX = -28; lKneeY = -25; lFootX = -40; lFootY = 2;
+                rKneeX = 24 + 88 * thrust;
+                rKneeY = -72 - 34 * thrust;
+                rFootX = 15 + 48 * thrust;
+                rFootY = -35 - 18 * thrust;
+                rLegKick = true;
+                legGlow = '#f97316';
+            }
+            else if (pose === 'bamboo_combo') {
+                // Overhead Bamboo Smash + Simultaneous Front Snap Kick!
+                lKneeX = -24; lKneeY = -30; lFootX = -28; lFootY = -4;
+                rKneeX = 20 + 45 * thrust;
+                rKneeY = -68 - 14 * thrust;
+                rFootX = 26 + 92 * thrust;
+                rFootY = -52 - 24 * thrust;
+                rLegKick = true;
+                legGlow = '#84cc16';
+            }
+            else if (pose === 'left_jab' || pose === 'right_hook' || pose === 'double_thappor') {
+                // Wide martial arts forward lunge step with the front leg!
+                lKneeX = -26 - 10 * thrust; lKneeY = -30; lFootX = -36 - 14 * thrust; lFootY = -4;
+                rKneeX = 28 + 22 * thrust;  rKneeY = -32; rFootX = 34 + 28 * thrust;  rFootY = -4;
+            }
+
+            // Draw Back (Left) Leg first
+            drawArticulatedLeg(lHipX, lHipY, lKneeX, lKneeY, lFootX, lFootY, skinColor, lLegKick, lLegKick ? legGlow : null);
+
+            // =========================================================================
+            // 2. TRADITIONAL CHECKERED LUNGI ("KACHHA MARA" WITH DYNAMIC HIKE-UP)
+            // =========================================================================
+            ctx.save();
+            ctx.translate(0, idleBounce * 0.5);
+            const lungiHike = (lLegKick || rLegKick) ? -14 * thrust : 0;
+            ctx.fillStyle = '#1d4ed8';
+            ctx.strokeStyle = '#1c1917';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(-35, -90);
+            ctx.lineTo(35, -90);
+            ctx.lineTo(44 + (rLegKick ? 18 * thrust : 0), -42 + lungiHike);
+            ctx.lineTo(-40, -42 + lungiHike * 0.4);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Lungi Checkered Pattern Lines
+            ctx.strokeStyle = '#93c5fd';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(-36, -66 + lungiHike * 0.5); ctx.lineTo(38, -66 + lungiHike * 0.5);
+            ctx.moveTo(-12, -90); ctx.lineTo(-14, -42 + lungiHike * 0.4);
+            ctx.moveTo(14, -90); ctx.lineTo(18, -42 + lungiHike);
+            ctx.stroke();
+            ctx.restore();
+
+            // Draw Front (Right) Leg & High-Kick Leg on top of Lungi so kicks pop clearly!
+            if (lLegKick) {
+                drawArticulatedLeg(rHipX, rHipY, rKneeX, rKneeY, rFootX, rFootY, skinColor, false, null);
+                drawArticulatedLeg(lHipX, lHipY, lKneeX, lKneeY, lFootX, lFootY, skinColor, true, legGlow);
+            } else {
+                drawArticulatedLeg(rHipX, rHipY, rKneeX, rKneeY, rFootX, rFootY, skinColor, rLegKick, rLegKick ? legGlow : null);
+            }
+
+            // Draw Crescent Kick / Knee Impact Arcs when kicking!
+            if ((lLegKick || rLegKick) && thrust > 0.25) {
+                ctx.save();
+                ctx.strokeStyle = legGlow || '#facc15';
+                ctx.lineWidth = 7 * thrust;
+                ctx.lineCap = 'round';
+                ctx.shadowColor = legGlow || '#facc15';
+                ctx.shadowBlur = 16;
+                ctx.beginPath();
+                ctx.arc(45, -85, 78, -0.85, 0.55);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // =========================================================================
+            // 3. TORSO, BACK ARM, HEAD & FRONT ARM
+            // =========================================================================
+            ctx.save();
+            ctx.translate(0, idleBounce);
+
+            // Dynamic torso lean based on move
+            let torsoTilt = 0;
+            if (pose === 'left_jab' || pose === 'right_hook' || pose === 'double_thappor') torsoTilt = 0.18 * thrust;
+            else if (pose === 'lungi_kick' || pose === 'high_kick') torsoTilt = -0.24 * thrust;
+            else if (pose === 'flying_knee') torsoTilt = 0.12 * thrust;
+            else if (pose === 'bamboo_combo') torsoTilt = 0.22 * thrust;
+            ctx.rotate(torsoTilt);
+
+            // Compute Articulated Left & Right Arm Coordinates
+            const fistShakeA = (pose === 'idle' && !isKnockdown) ? Math.sin(now * (isDarkRage ? 0.028 : 0.01)) * (isDarkRage ? 22 : 5) : 0;
+            const fistShakeB = (pose === 'idle' && !isKnockdown) ? Math.cos(now * (isDarkRage ? 0.028 : 0.01)) * (isDarkRage ? 22 : 5) : 0;
+
+            let lShoulderX = -22, lShoulderY = -142;
+            let lElbowX = -32, lElbowY = -112 + fistShakeA * 0.5;
+            let lHandX = -6,  lHandY = -126 + fistShakeA;
+            let lOpenPalm = false, lFistScale = 1.0, lArmGlow = null;
+
+            let rShoulderX = 22, rShoulderY = -142;
+            let rElbowX = 28, rElbowY = -110 + fistShakeB * 0.5;
+            let rHandX = 46, rHandY = -128 + fistShakeB;
+            let rOpenPalm = false, rFistScale = 1.0, rArmGlow = null;
+
+            if (isKnockdown) {
+                // Arms flailing wildly when flipped upside down
+                lElbowX = -48; lElbowY = -135 + Math.sin(now * 0.05) * 20;
+                lHandX = -65;  lHandY = -160 - Math.sin(now * 0.05) * 25;
+                lOpenPalm = true;
+                rElbowX = 48;  rElbowY = -135 - Math.sin(now * 0.05) * 20;
+                rHandX = 65;   rHandY = -160 + Math.sin(now * 0.05) * 25;
+                rOpenPalm = true;
+            }
+            else if (pose === 'left_jab') {
+                // Left Arm stretches all the way across into the Khamba with a giant glowing fist!
+                lElbowX = 25 + 32 * thrust;
+                lElbowY = -142 - 5 * thrust;
+                lHandX = 35 + 95 * thrust;
+                lHandY = -140 - 8 * thrust;
+                lFistScale = 1.38;
+                lArmGlow = '#facc15';
+                // Right hand guards chin
+                rElbowX = 12; rElbowY = -112; rHandX = 24; rHandY = -148;
+            }
+            else if (pose === 'right_hook') {
+                // Left hand pulls back while Right Arm swings a massive power hook/slap!
+                lElbowX = -38; lElbowY = -118; lHandX = -22; lHandY = -142;
+                rElbowX = 42 + 28 * thrust;
+                rElbowY = -152 + 12 * thrust;
+                rHandX = 45 + 92 * thrust;
+                rHandY = -134 + 6 * thrust;
+                rFistScale = 1.42;
+                rArmGlow = '#ef4444';
+            }
+            else if (pose === 'double_thappor') {
+                // Both hands thrashing the Khamba with open slapping palms ("ডাবল থাপ্পড়")!
+                const slapAlt = Math.sin(now * 0.06) * 18;
+                lElbowX = 24 + 25 * thrust; lElbowY = -154 + slapAlt;
+                lHandX = 38 + 88 * thrust;  lHandY = -148 + slapAlt;
+                lOpenPalm = true; lFistScale = 1.3; lArmGlow = '#fde047';
+
+                rElbowX = 28 + 25 * thrust; rElbowY = -120 - slapAlt;
+                rHandX = 42 + 92 * thrust;  rHandY = -124 - slapAlt;
+                rOpenPalm = true; rFistScale = 1.3; rArmGlow = '#fb7185';
+            }
+            else if (pose === 'lungi_kick') {
+                // Left hand hikes up the Lungi while Right arm swings out for balance!
+                lElbowX = -36; lElbowY = -105; lHandX = -18; lHandY = -74;
+                rElbowX = 38;  rElbowY = -148; rHandX = 68;  rHandY = -162;
+                rOpenPalm = true;
+            }
+            else if (pose === 'high_kick' || pose === 'flying_knee') {
+                // Martial-arts counterbalance arms during jumping kicks!
+                lElbowX = -42; lElbowY = -135; lHandX = -64; lHandY = -155;
+                lOpenPalm = true;
+                rElbowX = 36;  rElbowY = -138; rHandX = 62;  rHandY = -148;
+            }
+            else if (pose === 'bamboo_combo') {
+                // Both hands grip and swing the heavy green Bamboo ("বাঁশের বাড়ি")!
+                lElbowX = 22 + 20 * thrust; lElbowY = -155 + 15 * thrust;
+                lHandX = 38 + 38 * thrust;  lHandY = -142 + 18 * thrust;
+                rElbowX = 28 + 24 * thrust; rElbowY = -145 + 15 * thrust;
+                rHandX = 48 + 42 * thrust;  rHandY = -134 + 18 * thrust;
+            }
+
+            // Draw Left Arm Behind Torso (unless throwing a Left Jab or Double Slap, where it reaches in front!)
+            if (pose !== 'left_jab' && pose !== 'double_thappor') {
+                drawArticulatedArm(lShoulderX, lShoulderY, lElbowX, lElbowY, lHandX, lHandY, skinColor, lOpenPalm, lFistScale, lArmGlow);
+            }
+
+            // DIU Green T-Shirt Torso
+            ctx.fillStyle = '#15803d';
+            ctx.strokeStyle = '#052e16';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.roundRect(-34, -155, 68, 72, 12);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = '#bbf7d0';
+            ctx.font = 'bold 15px "Chakra Petch", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('DIU', 4, -115);
+
+            // Draw Bamboo Pole if executing Bamboo Combo
+            if (pose === 'bamboo_combo' && !isKnockdown) {
+                ctx.save();
+                ctx.translate(rHandX - 10, rHandY);
+                ctx.rotate(-0.45 + 0.85 * thrust);
+
+                ctx.fillStyle = '#84cc16';
+                ctx.strokeStyle = '#365314';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.roundRect(-15, -10, 165, 16, 5);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.strokeStyle = '#ecfccb';
+                ctx.lineWidth = 2.5;
+                [25, 65, 105, 138].forEach(bx => {
+                    ctx.beginPath();
+                    ctx.moveTo(bx, -10);
+                    ctx.lineTo(bx, 6);
+                    ctx.stroke();
+                });
+                ctx.restore();
+            }
+
+            // Draw Front Arms & Punch Speed Streaks!
+            if (pose === 'left_jab' || pose === 'double_thappor') {
+                drawArticulatedArm(lShoulderX, lShoulderY, lElbowX, lElbowY, lHandX, lHandY, skinColor, lOpenPalm, lFistScale, lArmGlow);
+            }
+            drawArticulatedArm(rShoulderX, rShoulderY, rElbowX, rElbowY, rHandX, rHandY, skinColor, rOpenPalm, rFistScale, rArmGlow);
+
+            if ((pose === 'left_jab' || pose === 'right_hook' || pose === 'double_thappor') && thrust > 0.25) {
+                ctx.save();
+                ctx.strokeStyle = 'rgba(253, 224, 71, 0.85)';
+                ctx.lineWidth = 4;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(35, -150); ctx.lineTo(125 * thrust, -150);
+                ctx.moveTo(40, -125); ctx.lineTo(130 * thrust, -125);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // 4. HEAD & EXTREME DARKNESS RAGE / KNOCKDOWN EXPRESSIONS
+            ctx.save();
+            ctx.translate(0, -185);
+
+            // Head turns flushed red when enraged in the dark!
+            ctx.fillStyle = isDarkRage ? '#dc5632' : '#d97742';
+            ctx.strokeStyle = '#271206';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(0, 0, 28, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Spiky hair stands up on end when enraged in the dark!
+            ctx.fillStyle = (state.ultimateActive || state.rage >= 100) ? '#facc15' : (isDarkRage ? '#270909' : '#18181b');
+            const spikeBoost = isDarkRage ? 9 : 0;
+            ctx.beginPath();
+            ctx.moveTo(-28, -6);
+            ctx.lineTo(-36, -26 - spikeBoost);
+            ctx.lineTo(-14, -22);
+            ctx.lineTo(-6, -38 - spikeBoost);
+            ctx.lineTo(10, -24);
+            ctx.lineTo(27, -34 - spikeBoost);
+            ctx.lineTo(28, -8);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Red Fighting Headband
+            ctx.fillStyle = '#ef4444';
+            ctx.fillRect(-28, -14, 56, 9);
+            ctx.strokeRect(-28, -14, 56, 9);
+            const tailWave = Math.sin(performance.now() * 0.015) * 6;
+            ctx.beginPath();
+            ctx.moveTo(-28, -10);
+            ctx.lineTo(-52, -18 + tailWave);
+            ctx.lineTo(-48, -4 + tailWave);
+            ctx.closePath();
+            ctx.fill();
+
+            // Pulsing Anime Rage Vein Symbol (💢) on Forehead when Power is OFF!
+            if (isDarkRage) {
+                ctx.save();
+                ctx.translate(-12, -18);
+                const veinPulse = 0.9 + Math.sin(performance.now() * 0.03) * 0.25;
+                ctx.scale(veinPulse, veinPulse);
+                ctx.strokeStyle = '#fef08a';
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.moveTo(-5, -5); ctx.lineTo(-1, -1); ctx.lineTo(-5, 3);
+                ctx.moveTo(5, -5); ctx.lineTo(1, -1); ctx.lineTo(5, 3);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // Eyes & Mouth
+            if (isKnockdown) {
+                // Dizzy X_X eyes when knocked upside down!
+                ctx.strokeStyle = '#111';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(-9, -4); ctx.lineTo(-1, 4);
+                ctx.moveTo(-1, -4); ctx.lineTo(-9, 4);
+                ctx.moveTo(9, -4); ctx.lineTo(17, 4);
+                ctx.moveTo(17, -4); ctx.lineTo(9, 4);
+                ctx.stroke();
+
+                // Wavy dazed mouth
+                ctx.beginPath();
+                ctx.arc(4, 11, 6, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+            else if (state.isPowerOn && pose === 'idle' && !state.ultimateActive) {
+                ctx.fillStyle = '#111';
+                ctx.beginPath();
+                ctx.arc(-4, -2, 3.5, 0, Math.PI * 2);
+                ctx.arc(14, -2, 3.5, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.strokeStyle = '#111';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(5, 6, 10, 0.15, Math.PI - 0.15);
+                ctx.stroke();
+            } else {
+                // EXTREME RAGE FACE IN DARKNESS!
+                ctx.strokeStyle = '#111';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(-15, -7); ctx.lineTo(0, -1);
+                ctx.moveTo(23, -7); ctx.lineTo(8, -1);
+                ctx.stroke();
+
+                // Glowing Blood-Red Laser Eyes in the dark!
+                ctx.save();
+                ctx.fillStyle = state.ultimateActive ? '#00f0ff' : '#ff1111';
+                ctx.shadowColor = '#ff0000';
+                ctx.shadowBlur = isDarkRage ? 14 : 0;
+                ctx.beginPath();
+                ctx.arc(-5, 0, isDarkRage ? 4.5 : 3.5, 0, Math.PI * 2);
+                ctx.arc(14, 0, isDarkRage ? 4.5 : 3.5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                // Fierce Grinding Teeth Mouth
+                ctx.fillStyle = '#fff';
+                ctx.strokeStyle = '#111';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.roundRect(-8, 6, 25, 11, 3);
+                ctx.fill();
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(-8, 11.5); ctx.lineTo(17, 11.5);
+                ctx.moveTo(0, 6); ctx.lineTo(0, 17);
+                ctx.moveTo(8, 6); ctx.lineTo(8, 17);
+                ctx.stroke();
+            }
+
+            ctx.restore(); // End Head
+            ctx.restore(); // End Torso
+
+            if (isKnockdown) {
+                ctx.restore(); // End 180-degree Upside-Down Flip
+
+                // Draw spinning dizzy stars around the student's head on the ground!
+                for (let s = 0; s < 4; s++) {
+                    const starAngle = performance.now() * 0.008 + (s * Math.PI / 2);
+                    const sx = Math.cos(starAngle) * 42;
+                    const sy = -22 + Math.sin(starAngle) * 12;
+                    ctx.font = '18px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(s % 2 === 0 ? '⭐' : '💫', sx, sy);
+                }
+            }
+
+            // 5. ANNOYING MOSQUITOES BUZZING AROUND IN THE DARK!
+            if (!state.isPowerOn) {
+                state.mosquitoes.forEach((m) => {
+                    m.angle += m.speed;
+                    const mx = Math.cos(m.angle) * m.radiusX;
+                    const my = m.offsetY + Math.sin(m.angle * 2) * m.radiusY;
+
+                    ctx.save();
+                    ctx.translate(mx, my);
+                    ctx.fillStyle = '#000';
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, 3.5, 1.8, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = 'rgba(255,255,255,0.75)';
+                    const wingY = Math.sin(performance.now() * 0.08) * 3;
+                    ctx.beginPath();
+                    ctx.ellipse(0, -2 - wingY, 2, 4, 0.3, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                });
+            }
+
+            ctx.restore(); // End Fighter
+        }
+
+        function drawEffects() {
+            // 1. Shockwaves
+            for (let i = state.shockwaves.length - 1; i >= 0; i--) {
+                const sw = state.shockwaves[i];
+                sw.r += 9;
+                sw.alpha -= 0.045;
+                if (sw.alpha <= 0) {
+                    state.shockwaves.splice(i, 1);
+                    continue;
+                }
+                ctx.save();
+                ctx.strokeStyle = `rgba(56, 189, 248, ${sw.alpha})`;
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.arc(sw.x, sw.y, sw.r, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // 2. Ear Steam Puffs (When enraged in the dark!)
+            for (let i = state.earSteamPuffs.length - 1; i >= 0; i--) {
+                const es = state.earSteamPuffs[i];
+                es.x += es.vx;
+                es.y += es.vy;
+                es.r += 0.35;
+                es.alpha -= 0.028;
+                if (es.alpha <= 0) {
+                    state.earSteamPuffs.splice(i, 1);
+                    continue;
+                }
+                ctx.fillStyle = `rgba(254, 226, 226, ${es.alpha})`;
+                ctx.beginPath();
+                ctx.arc(es.x, es.y, es.r, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // 3. Transformer Smoke Puffs
+            for (let i = state.smokePuffs.length - 1; i >= 0; i--) {
+                const sp = state.smokePuffs[i];
+                sp.x += sp.vx;
+                sp.y += sp.vy;
+                sp.r += 0.4;
+                sp.alpha -= 0.018;
+                if (sp.alpha <= 0) {
+                    state.smokePuffs.splice(i, 1);
+                    continue;
+                }
+                ctx.fillStyle = `rgba(148, 163, 184, ${sp.alpha})`;
+                ctx.beginPath();
+                ctx.arc(sp.x, sp.y, sp.r, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // 4. Electric Sparks
+            for (let i = state.sparks.length - 1; i >= 0; i--) {
+                const p = state.sparks[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.48;
+                p.life--;
+
+                if (p.y > 415) {
+                    p.y = 415;
+                    p.vy *= -0.55;
+                }
+
+                if (p.life <= 0) {
+                    state.sparks.splice(i, 1);
+                    continue;
+                }
+
+                ctx.save();
+                ctx.fillStyle = p.color;
+                ctx.shadowColor = p.color;
+                ctx.shadowBlur = 8;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size * (p.life / p.maxLife), 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            // 5. Floating Banglish Hit Texts
+            for (let i = state.floatingTexts.length - 1; i >= 0; i--) {
+                const ft = state.floatingTexts[i];
+                ft.y += ft.vy;
+                ft.alpha -= 0.022;
+                if (ft.alpha <= 0) {
+                    state.floatingTexts.splice(i, 1);
+                    continue;
+                }
+
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, Math.min(1, ft.alpha));
+                ctx.font = 'bold 26px "Bangers", "Hind Siliguri", cursive';
+                ctx.textAlign = 'center';
+                ctx.lineWidth = 5;
+                ctx.strokeStyle = '#000';
+                ctx.strokeText(ft.text, ft.x, ft.y);
+                ctx.fillStyle = ft.color;
+                ctx.fillText(ft.text, ft.x, ft.y);
+                ctx.restore();
+            }
+        }
+
+        /**************************************************************
+         * 5. MAIN 60FPS GAME LOOP
+         **************************************************************/
+        function gameLoop() {
+            const now = performance.now();
+
+            // 1. Update Voltage Drain & Ultimate Lock
+            if (state.ultimateActive) {
+                state.ultimateTimer--;
+                state.voltage = 100;
+                if (state.ultimateTimer <= 0) {
+                    state.ultimateActive = false;
+                    document.getElementById('ult-banner').classList.add('hidden');
+                    updateHUD();
+                }
+            } else if (state.voltage > 0) {
+                state.voltage = Math.max(0, state.voltage - state.drainRate);
+            }
+
+            // Passive rage boil when sitting in the dark without electricity!
+            if (!state.isPowerOn && !state.ultimateActive && state.rage < 100) {
+                state.rage = Math.min(100, state.rage + 0.04);
+                // Spawn angry ear steam puffs in the dark!
+                if (Math.random() < 0.18 && state.fighter.knockdownTimer <= 0) {
+                    const fx = 470 + state.fighter.xOffset;
+                    const fy = 235 + state.fighter.yOffset;
+                    state.earSteamPuffs.push({
+                        x: fx - 28,
+                        y: fy,
+                        vx: -2.2 - Math.random() * 1.5,
+                        vy: -1.5 - Math.random(),
+                        r: 5 + Math.random() * 4,
+                        alpha: 0.75
+                    });
+                    state.earSteamPuffs.push({
+                        x: fx + 28,
+                        y: fy,
+                        vx: 2.2 + Math.random() * 1.5,
+                        vy: -1.5 - Math.random(),
+                        r: 5 + Math.random() * 4,
+                        alpha: 0.75
+                    });
+                }
+            }
+
+            checkPowerState();
+
+            // 2. Track Power Uptime & Ceiling Fan Rotation
+            if (state.isPowerOn) {
+                state.uptimeSeconds += 1 / 60;
+                state.fanAngle += 0.32;
+                document.getElementById('uptime-timer').innerText = `${state.uptimeSeconds.toFixed(1)}s`;
+            } else {
+                state.fanAngle += 0.01;
+            }
+
+            // 3. Update Fighter Pose & Upside-Down Knockdown Timer
+            if (state.fighter.knockdownTimer > 0) {
+                state.fighter.knockdownTimer--;
+                if (state.fighter.knockdownTimer <= 0) {
+                    state.fighter.pose = 'idle';
+                    state.fighter.xOffset = 0;
+                    state.fighter.yOffset = 0;
+                    updateHUD();
+                }
+            } else if (state.fighter.poseTimer > 0) {
+                state.fighter.poseTimer--;
+                if (state.fighter.poseTimer <= 0) {
+                    state.fighter.pose = 'idle';
+                    state.fighter.xOffset = 0;
+                    state.fighter.yOffset = 0;
+                }
+            }
+
+            if (state.fighter.studentBubble.timer > 0) {
+                state.fighter.studentBubble.timer--;
+            }
+
+            // 4. Update Flexible Khamba Spring Physics & Whip-Back Head Smack!
+            const springK = 0.19;
+            const damping = 0.82;
+            const springForce = -springK * state.pole.bendAngle;
+            state.pole.bendVelocity = (state.pole.bendVelocity + springForce) * damping;
+            state.pole.bendAngle += state.pole.bendVelocity;
+
+            // Handle Khamba Counter-Attack Whip onto Student's Head!
+            if (state.pole.counterAttackPhase === 1 && state.pole.bendAngle > 0.32) {
+                // Snap back hard to the left!
+                state.pole.counterAttackPhase = 2;
+                state.pole.bendVelocity = -0.36;
+            } else if (state.pole.counterAttackPhase === 2 && state.pole.bendAngle < -0.34) {
+                // Khamba hits the student's head and flips him upside down!
+                triggerKhambaHeadSmack();
+            }
+
+            if (state.pole.flashTimer > 0) state.pole.flashTimer--;
+            if (state.screenShake > 0) state.screenShake *= 0.82;
+
+            // 5. Reset combo if inactive
+            if (state.combo > 0 && now - state.lastHitTimestamp > 1400) {
+                state.combo = 0;
+                updateHUD();
+            }
+
+            // 6. Update Cooldown Visual Indicators on Buttons
+            const bambooStatus = document.getElementById('bamboo-status-text');
+            if (now < state.bambooCooldownUntil) {
+                const rem = ((state.bambooCooldownUntil - now) / 1000).toFixed(1);
+                bambooStatus.innerText = `Cooldown: ${rem}s`;
+            } else {
+                bambooStatus.innerText = `+32% Voltage • Shockwave`;
+            }
+
+            // 7. Periodic Hostel Window Quotes + Voice Audio (More frequent in the dark!)
+            if (state.windowBubble.timer > 0) {
+                state.windowBubble.timer--;
+            } else if (Math.random() < (state.isPowerOn ? 0.005 : 0.014)) {
+                triggerHallShout(false);
+            }
+
+            // Sync Voltage & Rage bars smoothly
+            document.getElementById('voltage-pct').innerText = `${Math.floor(state.voltage)}%`;
+            document.getElementById('voltage-bar').style.width = `${state.voltage}%`;
+            document.getElementById('rage-pct').innerText = `${Math.floor(state.rage)}%`;
+            document.getElementById('rage-bar').style.width = `${state.rage}%`;
+
+            // Render everything
+            drawScene();
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        window.onload = function () {
+            updateHUD();
+            gameLoop();
+        };
+    </script>
+</body>
+</html>
